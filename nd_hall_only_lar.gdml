@@ -1,5 +1,14 @@
-<?xml version="1.0" encoding="ASCII"?>
-<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<gdml_simple_extension xmlns:gdml_simple_extension="http://www.example.org" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="SimpleExtension.xsd">
+    <extension>
+        <color name="test_color" R="0.1" G="0.2" B="0.3" A="1.0" />
+        <color name="magenta" R="1.0" G="0.0" B="1.0" A="1.0" />
+        <color name="green" R="0.0" G="1.0" B="0.0" A="1.0" />
+        <color name="red" R="1.0" G="0.0" B="0.0" A="1.0" />
+        <color name="blue" R="0.0" G="0.0" B="1.0" A="1.0" />
+        <color name="yellow" R="1.0" G="1.0" B="0.0" A="1.0" />
+        <color name="purple" R="0.5" G="0.0" B="0.5" A="1.0" />
+    </extension>
   <define>
     <rotation unit="degree" name="ArgonCubeServiceL_rot" x="0.0" y="0.0" z="0.0"/>
     <position unit="cm" name="ArgonCubeServiceLvolLArService0_pos" x="0.0" y="-10.0" z="0.0"/>
@@ -1302,7 +1311,10 @@
     <volume name="volLArActive">
       <materialref ref="LAr"/>
       <solidref ref="LArActive"/>
-      <auxiliary auxtype="SensDet" auxvalue="ArgonCube"/>
+      <auxiliary auxtype="SensDet" auxvalue="SimEnergyDeposit" />
+      <colorref ref="magenta" />
+      <auxiliary auxtype="StepLimit" auxvalue="0.4" auxunit="mm" />
+      <auxiliary auxtype="Solid" auxvalue="True" />
     </volume>
     <volume name="volLArLight">
       <materialref ref="Air"/>
@@ -2996,4 +3008,4 @@
   <setup name="Default" version="0">
     <world ref="volWorld"/>
   </setup>
-</gdml>
+</gdml_simple_extension>
