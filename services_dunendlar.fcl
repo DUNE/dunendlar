@@ -1,0 +1,18 @@
+#include "seedservice.fcl"
+
+BEGIN_PROLOG
+
+#
+# the random policy extracts unpredictable, random seeds in a way similar to the
+# behaviour that existed before NuRandomService.
+# You don't want this for production.
+#
+dunendlar_seedservice: @local::random_NuRandomService # from seedservice.fcl
+
+dunendlar_geometry_helper:
+{
+ service_provider : StandardGeometryHelper
+}
+
+
+END_PROLOG

@@ -1,0 +1,20 @@
+#include "genie.fcl"
+
+BEGIN_PROLOG
+
+# beam neutrino configurations
+
+dunendlar_genie:                         @local::standard_genie
+dunendlar_genie.BeamName:                "lbnf"
+dunendlar_genie.EventsPerSpill:          1
+dunendlar_genie.POTPerSpill:             0
+dunendlar_genie.GlobalTimeOffset:        0
+dunendlar_genie.RandomTimeOffset:        0
+dunendlar_genie.TopVolume:               "volLArActive"
+dunendlar_genie.BeamCenter:       [0., 0., -130.]  #center of the beam in cm relative to detector coordinate origin, in meters for GENIE
+dunendlar_genie.BeamDirection:    [0., 0., 1.]    #all in the z direction
+dunendlar_genie.BeamRadius:       3.              #in meters for GENIE
+dunendlar_genie.XSecTable: "
+
+
+END_PROLOG
