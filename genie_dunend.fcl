@@ -14,7 +14,6 @@ dunendlar_genie.TopVolume:               "volLArActive"
 dunendlar_genie.BeamCenter:       [0., 0., -130.]  #center of the beam in cm relative to detector coordinate origin, in meters for GENIE
 dunendlar_genie.BeamDirection:    [0., 0., 1.]    #all in the z direction
 dunendlar_genie.BeamRadius:       3.              #in meters for GENIE
-dunendlar_genie.XSecTable: "
 
 
 END_PROLOG
