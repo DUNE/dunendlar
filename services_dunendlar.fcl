@@ -2,11 +2,7 @@
 
 BEGIN_PROLOG
 
-#
-# the random policy extracts unpredictable, random seeds in a way similar to the
-# behaviour that existed before NuRandomService.
-# You don't want this for production.
-#
+# dunendlar services
 dunendlar_seedservice: @local::random_NuRandomService # from seedservice.fcl
 
 dunendlar_geometry_helper:
@@ -14,5 +10,22 @@ dunendlar_geometry_helper:
  service_provider : StandardGeometryHelper
 }
 
+dunendlar_geo:
+{
+  Name: "nd_hall_only_lar"
+  GDML: "nd_hall_only_lar.gdml" 
+  ROOT: "nd_hall_only_lar.gdml"
+  SurfaceY: 0
+  DisableWiresInG4: false
+  SortingParameters: {}
+  service_type: "Geometry"
+}
+
+dunendlar_services:
+{
+  ExptGeoHelperInterface:        @local::dunendlar_geometry_helper
+  Geometry:                      @local::dunendlar_geo
+  NuRandomService:               @local::dunendlar_seedservice
+}
 
 END_PROLOG

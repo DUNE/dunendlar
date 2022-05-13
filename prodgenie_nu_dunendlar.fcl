@@ -9,17 +9,7 @@ services:
   TimeTracker:           {}
   MemoryTracker:         {} # default is one
   RandomNumberGenerator: {} #ART native random number generator
-  Geometry: {
-     Name: "nd_hall_only_lar"
-     GDML: "nd_hall_only_lar.gdml" 
-     ROOT: "nd_hall_only_lar.gdml"
-     SurfaceY: 0
-     DisableWiresInG4: false
-     SortingParameters: {}
-     service_type: "Geometry"
-  }
-  ExptGeoHelperInterface:        @local::dunendlar_geometry_helper
-  NuRandomService:               @local::dunendlar_seedservice
+  @table::dunendlar_services
 }
 
 #Start each new event with an empty event.
