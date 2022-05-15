@@ -1,3 +1,4 @@
+#include "services_dunendlar.fcl"
 #include "LArG4.fcl"
 //#include "seedservice.fcl"
 #no experiment specific configurations because larg4SingleGen is detector agnostic
@@ -122,6 +123,8 @@ ParticleListAction: {service_type: "ParticleListActionService"
                              # of the end of the track (the final step is defined to have 0 kinetic energy)
                              # --- This forces that true penultimate point to be saved, thus preserving the info
 }
+  GeometryConfigurationWriter: {}
+  @table::dunendlar_services
 }
 
 outputs: {
