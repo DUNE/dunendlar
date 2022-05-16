@@ -1,4 +1,7 @@
 #include "seedservice.fcl"
+#include "detectorproperties.fcl"
+#include "larproperties.fcl"
+#include "detectorclocks.fcl"
 
 BEGIN_PROLOG
 
@@ -21,11 +24,17 @@ dunendlar_geo:
   service_type: "Geometry"
 }
 
+dunendlar_detproperties:         @local::standard_detproperties
+dunendlar_properties:            @local::standard_properties
+dunendlar_detectorclocks:        @local::standard_detectorclocks
 dunendlar_services:
 {
   ExptGeoHelperInterface:        @local::dunendlar_geometry_helper
   Geometry:                      @local::dunendlar_geo
   NuRandomService:               @local::dunendlar_seedservice
+  DetectorPropertiesService:     @local::dunendlar_detproperties
+  LArPropertiesService:          @local::dunendlar_properties
+  DetectorClocksService:         @local::dunendlar_detectorclocks
 }
 
 END_PROLOG
