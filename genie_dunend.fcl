@@ -10,10 +10,12 @@ dunendlar_genie.EventsPerSpill:          1
 dunendlar_genie.POTPerSpill:             0
 dunendlar_genie.GlobalTimeOffset:        0
 dunendlar_genie.RandomTimeOffset:        0
-dunendlar_genie.TopVolume:               "volLArActive"
-dunendlar_genie.BeamCenter:       [0., 0., -130.]  #center of the beam in cm relative to detector coordinate origin, in meters for GENIE
+#dunendlar_genie.TopVolume:               "volLArActive"
+dunendlar_genie.TopVolume:               "volWorld"
+dunendlar_genie.BeamCenter:       [-3.3155, 0.05387, 3.6276]  #center of the beam in cm relative to detector coordinate origin, in meters for GENIE
 dunendlar_genie.BeamDirection:    [0., 0., 1.]    #all in the z direction
-dunendlar_genie.BeamRadius:       3.              #in meters for GENIE
+dunendlar_genie.BeamRadius:       .01              #in meters for GENIE
 dunendlar_genie.FluxType:         "mono"
-
+dunendlar_genie.DefinedVtxHistRange: true
+dunendlar_genie.VtxPosHistRange: [-1000,1000,-1000,1000,-1000,1000]
 END_PROLOG
