@@ -9,7 +9,9 @@ services:
   TimeTracker:           {}
   MemoryTracker:         {} # default is one
   RandomNumberGenerator: {} #ART native random number generator
+  GeometryConfigurationWriter: {}
   @table::dunendlar_services
+  IFDH: {}
 }
 
 #Start each new event with an empty event.
