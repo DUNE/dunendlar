@@ -24,6 +24,17 @@ dunendlar_geo:
   service_type: "Geometry"
 }
 
+dunendlartms_geo:
+{
+  Name: "nd_hall_with_lar_tms_nosand_norotation_changename"
+  GDML: "nd_hall_with_lar_tms_nosand_norotation_changename.gdml" 
+  ROOT: "nd_hall_with_lar_tms_nosand_norotation_changename.gdml"
+  SurfaceY: 0
+  DisableWiresInG4: false
+  SortingParameters: {}
+  service_type: "Geometry"
+}
+
 dunendlar_detproperties:         @local::standard_detproperties
 dunendlar_properties:            @local::standard_properties
 dunendlar_detectorclocks:        @local::standard_detectorclocks
@@ -36,5 +47,8 @@ dunendlar_services:
   LArPropertiesService:          @local::dunendlar_properties
   DetectorClocksService:         @local::dunendlar_detectorclocks
 }
+
+dunendlartms_services:           @local::dunendlar_services
+dunendlartms_services.Geometry:  @local::dunendlartms_geo
 
 END_PROLOG
