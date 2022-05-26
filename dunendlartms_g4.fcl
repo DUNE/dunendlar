@@ -1,0 +1,130 @@
+#include "services_dunendlar.fcl"
+#include "LArG4.fcl"
+
+process_name: G4
+
+source: {
+  module_type: RootInput
+  maxEvents:  10
+}
+
+services: {
+  message : {
+     debugModules : ["*"]
+     suppressInfo : []
+     destinations : {
+       LogToConsole : {
+         type : "cout"
+         threshold : "DEBUG"
+         categories : {
+           default : { limit : 50 }
+         }
+       }
+     }
+  }
+  TFileService :
+  {
+    fileName      : "testlarg4.root"
+  }
+
+    DetectorHolder: {}
+    ActionHolder: {}
+    RandomNumberGenerator: {}
+    NuRandomService:{service_type: "NuRandomService"
+      endOfJobSummary: true
+      policy: "random"
+   }
+
+    PhysicsListHolder: {}
+    PhysicsList: {
+    PhysicsListName: "FTFP_BERT"
+    DumpList: false
+      enableCerenkov: false
+      enableScintillation: false
+    ScintillationByParticleType: false
+      enableAbsorption: false
+      enableRayleigh: false
+      enableMieHG: false
+      enableBoundary: false
+      enableWLS: false
+}
+
+    # Detector(s) for the simulation
+    LArG4Detector :
+    {
+    category: "world"
+    gdmlFileName_ : "nd_hall_with_lar_tms_nosand_norotation_changename.gdml"
+    }
+
+#    writeGdml: {
+#      name: "writeGdml"
+#      gdmlFileName:"output.gdml"
+#    }
+
+    ExampleGeneralAction: {
+      name: "exampleGeneral"
+    }
+MCTruthEventAction: {service_type: "MCTruthEventActionService"}
+ParticleListAction: {service_type: "ParticleListActionService"
+  service_type:  "ParticleListActionService"
+  EnergyCut: 1e-5 # Kinetic Energy cut in [MeV]
+  keepEMShowerDaughters: true
+  storeTrajectories: true
+  keepGenTrajectories: ["generator"]       # list of generator labels for which we want to store
+                                           # trajectory points. The protodune beam label is simply
+                                           # "generator"
+  keepOnlyPrimaryFullTrajectories : false  # (defaults to false in larg4) If set to true, only
+                                           # the particles with MCTruth process == "primary" and
+                                           # their descendants will have the full set of trajetory
+                                           # points stored. Particles descending from primaries with
+                                           # MCTruth process != "primary" will not have a full set
+                                           # of trajectory points stored -- only their start and
+                                           # end points. This filter only applies to the generator
+                                           # labels listed in the keepGenTrajectories. E.g, for the
+                                           # beam generator, no "primaryBackground" particles or their
+                                           # descendants would have a full set of traj. points. if
+                                           # this is set to true.
+  SparsifyTrajectories: true               # call SparsifyTrajectory() method on MCParticles with full trajectories
+                                           # being stored. This helps reduce memory usage in the root output stage
+                                           # if there are many trajectory points.
+  SparsifyMargin: 0.015      # required when SparsifyTrajectories is set to true
+  KeepTransportation: true   # When sparsifying: forces steps with the 'Transportation' process to be saved
+                             # --- Useful in protodune to keep the first step in the active volume
+  KeepSecondToLast: true     # Sparsifying could cut out the penultimate step point, which holds the correct info
+                             # of the end of the track (the final step is defined to have 0 kinetic energy)
+                             # --- This forces that true penultimate point to be saved, thus preserving the info
+}
+  GeometryConfigurationWriter: {}
+  @table::dunendlartms_services
+}
+
+outputs: {
+out1: {
+  module_type: RootOutput
+  fileName: "%ifb_g4.root"
+  }
+}
+
+physics: {
+  producers: {
+    largeant: @local::standard_larg4
+  }
+  analyzers: {
+   CheckSimEnergyDeposit: {   module_type: CheckSimEnergyDeposit
+          hist_dir: "HistoDir"
+          }
+   CheckMCParticle: {   module_type: CheckMCParticle
+          hist_dir: "HistoDir2"
+          }
+  CheckAuxDetHit: {   module_type: CheckAuxDetHit
+          hist_dir: "HistoDir3"
+          }
+
+}
+
+  path1: [ largeant ]
+  stream1:  [ out1,CheckSimEnergyDeposit,CheckMCParticle,CheckAuxDetHit]
+
+  trigger_paths: [ path1 ]
+  end_paths: [ stream1 ]
+}
