@@ -2815,7 +2815,7 @@
       <materialref ref="Scintillator"/>
       <solidref ref="MuonTaggerPlane"/>
       <auxiliary auxtype="SensDet" auxvalue="SimEnergyDeposit" />
-      <colorref ref="magenta" />
+      <colorref ref="blue" />
       <auxiliary auxtype="StepLimit" auxvalue="0.4" auxunit="mm" />
       <auxiliary auxtype="Solid" auxvalue="True" />
     </volume>
@@ -3467,7 +3467,7 @@
       <materialref ref="LAr"/>
       <solidref ref="TPCActive_shape"/>
       <auxiliary auxtype="SensDet" auxvalue="SimEnergyDeposit" />
-      <colorref ref="magenta" />
+      <colorref ref="red" />
       <auxiliary auxtype="StepLimit" auxvalue="0.4" auxunit="mm" />
       <auxiliary auxtype="Solid" auxvalue="True" />
       <auxiliary auxtype="EField" auxvalue="(500.0 V/cm, 0.0 V/cm, 0.0 V/cm)"/>
