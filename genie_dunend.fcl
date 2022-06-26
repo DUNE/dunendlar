@@ -21,13 +21,13 @@ dunendlar_genie.VtxPosHistRange: [-1000,1000,-1000,1000,-1000,1000]
 
 dunendlartms_genie:                         @local::standard_genie
 dunendlartms_genie.BeamName:                "lbnf"
-dunendlartms_genie.FluxFiles: ["gsimple_DUNEND_g4lbne_v3r5p4_QGSP_BERT_OptimizedEngineeredNov2017_neutrino_00001_00000.root"]
-dunendlartms_genie.FluxSearchPaths: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/Flux/g4lbne/v3r5p4/QGSP_BERT/OptimizedEngineeredNov2017/neutrino/gsimpleND/"
-dunendlartms_genie.FluxType: "gsimple"
+dunendlartms_genie.FluxFiles: ["g4lbne_v3r5p4_QGSP_BERT_OptimizedEngineeredNov2017_neutrino_00001.dk2nu.root"]
+dunendlartms_genie.FluxSearchPaths: "/cvmfs/dune.osgstorage.org/pnfs/fnal.gov/usr/dune/persistent/stash/Flux/g4lbne/v3r5p4/QGSP_BERT/OptimizedEngineeredNov2017/neutrino/flux/"
+dunendlartms_genie.FluxType: "dk2nu"
 dunendlartms_genie.TopVolume:               "volWorld"
 dunendlartms_genie.EventsPerSpill:          1
 dunendlartms_genie.POTPerSpill:             0
 dunendlartms_genie.DefinedVtxHistRange: true
-dunendlartms_genie.VtxPosHistRange: [-1000,1000,-1000,1000,-1000,1000]
+dunendlartms_genie.VtxPosHistRange: [-1000,1000,-1000,1000,0,2000]
 dunendlartms_genie.DetectorLocation: "DUNEND"
 END_PROLOG
