@@ -69,18 +69,19 @@
     <!-- volArgonCubeActive center position as determined by Chris and Luke independently on 2020-5-12 -->
     <!-- Using baseline from M. Leidner 2020-5-9 to LAr active volume center -->
     
-    <beampos> ( 0.0, 0.05387, 6.66 ) = ( 0, 0, 562.1179 ) </beampos>
+<!--    <beampos> ( 0.0, 0.05387, 6.66 ) = ( 0, 0, 562.1179 ) </beampos> -->
+    <beampos> ( -0.5, -1.73973, 6.66 ) = ( 0, 0, 574 ) </beampos>
 
     <!-- define flux window in detector coords -->
     <!-- need 3 positions to define a rectoid -->
     <!-- first point is the base, 2nd & 3rd should be orthogonal points
          (ie 2nd 3rd point should not be kitty-corner from 1st) -->
     <!-- Should be larger than LAr volume ~8m x 4m -->
-
+    <!-- https://arxiv.org/pdf/2103.13910.pdf -->
     <window>
-      <point coord="det"> 6.0, -5.0, -1.0 </point>
-      <point coord="det"> -6.0,  -5.0, -1.0 </point>
-      <point coord="det">  6.0, 5.0, -1.0 </point>
+      <point coord="det"> 5.5, -6.73973, -5.7028 </point>
+      <point coord="det"> -6.5,  -6.73973, -5.7028 </point>
+      <point coord="det">  5.5, 3.26027, -5.7028 </point>
     </window>
 
     
@@ -88,9 +89,6 @@
 
     <!-- allow entry to be reused 10 times before moving on -->
     <reuse> 10 </reuse>
-
-    <upstreamz> -3 </upstreamz>
-
 
   </param_set>
 
