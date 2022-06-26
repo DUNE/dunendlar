@@ -63,3 +63,5 @@ outputs:
    compressionLevel: 1
  }
 }
+physics.producers.generator.GeomScan: "flux:  10000 1.2 1" 
+physics.producers.generator.FiducialCut: "box:550,-673.973,170.28,-650,326.027,1000"
