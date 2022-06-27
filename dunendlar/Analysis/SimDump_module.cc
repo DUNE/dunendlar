@@ -19,10 +19,12 @@
 
 #include "art_root_io/TFileService.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
+#include "lardataobj/Simulation/SimEnergyDeposit.h"
 
 #include "TTree.h"
 
 #include <vector>
+#include <string>
 
 using namespace std;
 
@@ -52,8 +54,10 @@ public:
 private:
 
   const art::InputTag fGenieGenModuleLabel;
+  vector<art::InputTag> fSEDModuleLabels;
 
   TTree *fTree;
+  // Genie information
   vector<int> nuPDG;
   vector<int> ccnc;
   vector<int> mode;
@@ -76,6 +80,14 @@ private:
   vector<float> lep_dcosz;
   vector<float> t0;
 
+  // Geant4 information
+  vector<float>  sed_x;
+  vector<float>  sed_y;
+  vector<float>  sed_z;
+  vector<int>    sed_id;
+  vector<int>    sed_pdg;
+  vector<string> sed_det;
+
   void reset();
 
 };
@@ -83,7 +95,8 @@ private:
 
 dunend::SimDump::SimDump(fhicl::ParameterSet const& p)
   : EDAnalyzer{p}  ,
-  fGenieGenModuleLabel(p.get<art::InputTag>("GenieGenModuleLabel"))
+  fGenieGenModuleLabel(p.get<art::InputTag>("GenieGenModuleLabel")),
+  fSEDModuleLabels(p.get<vector<art::InputTag>>("SEDModuleLabels"))
 {
   // Call appropriate consumes<>() for any products to be retrieved by this module.
 }
@@ -144,6 +157,26 @@ void dunend::SimDump::analyze(art::Event const& e)
     }
   }
 
+  // Get SimEnergyDeposit information
+
+  for (auto & label : fSEDModuleLabels){
+    string det = label.instance().substr(20);
+    //cout<<label.instance().substr(20)<<endl;
+    std::vector<art::Ptr<sim::SimEnergyDeposit>> sedlist;
+    auto sedListHandle = e.getHandle< std::vector<sim::SimEnergyDeposit> >(label);
+    if (sedListHandle){
+      art::fill_ptr_vector(sedlist, sedListHandle);
+    }
+    for (auto & sed : sedlist){
+      sed_x.push_back(sed->X());
+      sed_y.push_back(sed->Y());
+      sed_z.push_back(sed->Z());
+      sed_id.push_back(sed->TrackID());
+      sed_pdg.push_back(sed->PdgCode());
+      sed_det.push_back(det);
+    }
+  }
+
   fTree->Fill();
 }
 
@@ -172,6 +205,13 @@ void dunend::SimDump::beginJob()
   fTree->Branch("lep_dcosy", &lep_dcosy);
   fTree->Branch("lep_dcosz", &lep_dcosz);
   fTree->Branch("t0", &t0);
+
+  fTree->Branch("sed_x", &sed_x);
+  fTree->Branch("sed_y", &sed_y);
+  fTree->Branch("sed_z", &sed_z);
+  fTree->Branch("sed_id", &sed_id);
+  fTree->Branch("sed_pdg", &sed_pdg);
+  fTree->Branch("sed_det", &sed_det);
 }
 
 void dunend::SimDump::reset(){
@@ -197,6 +237,12 @@ void dunend::SimDump::reset(){
   lep_dcosy.clear();
   lep_dcosz.clear();
   t0.clear();
+  sed_x.clear();
+  sed_y.clear();
+  sed_z.clear();
+  sed_id.clear();
+  sed_pdg.clear();
+  sed_det.clear();
 }
 
 DEFINE_ART_MODULE(dunend::SimDump)

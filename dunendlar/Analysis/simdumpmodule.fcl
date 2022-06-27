@@ -4,6 +4,9 @@ simdump_dunendlartms:
 {
     module_type:         "SimDump"
     GenieGenModuleLabel: "generator"
+    SEDModuleLabels: ["largeant:LArG4DetectorServicevolMuonTaggerPlane",
+                      "largeant:LArG4DetectorServicevolTPCActive",
+                      "largeant:LArG4DetectorServicescinBoxlvTMS"]
 }
 
 END_PROLOG
