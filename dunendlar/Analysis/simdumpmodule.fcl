@@ -1,0 +1,9 @@
+BEGIN_PROLOG
+
+simdump_dunendlartms:
+{
+    module_type:         "SimDump"
+    GenieGenModuleLabel: "generator"
+}
+
+END_PROLOG

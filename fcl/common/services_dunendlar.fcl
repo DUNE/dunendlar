@@ -1,0 +1,54 @@
+#include "seedservice.fcl"
+#include "detectorproperties.fcl"
+#include "larproperties.fcl"
+#include "detectorclocks.fcl"
+
+BEGIN_PROLOG
+
+# dunendlar services
+dunendlar_seedservice: @local::random_NuRandomService # from seedservice.fcl
+
+dunendlar_geometry_helper:
+{
+ service_provider : StandardGeometryHelper
+}
+
+dunendlar_geo:
+{
+  Name: "nd_hall_only_lar"
+  GDML: "nd_hall_only_lar.gdml" 
+  ROOT: "nd_hall_only_lar.gdml"
+  SurfaceY: 0
+  DisableWiresInG4: false
+  SortingParameters: {}
+  service_type: "Geometry"
+}
+
+dunendlartms_geo:
+{
+  Name: "nd_hall_with_lar_tms_nosand_norotation_changename"
+  GDML: "nd_hall_with_lar_tms_nosand_norotation_changename.gdml" 
+  ROOT: "nd_hall_with_lar_tms_nosand_norotation_changename.gdml"
+  SurfaceY: 0
+  DisableWiresInG4: false
+  SortingParameters: {}
+  service_type: "Geometry"
+}
+
+dunendlar_detproperties:         @local::standard_detproperties
+dunendlar_properties:            @local::standard_properties
+dunendlar_detectorclocks:        @local::standard_detectorclocks
+dunendlar_services:
+{
+  ExptGeoHelperInterface:        @local::dunendlar_geometry_helper
+  Geometry:                      @local::dunendlar_geo
+  NuRandomService:               @local::dunendlar_seedservice
+  DetectorPropertiesService:     @local::dunendlar_detproperties
+  LArPropertiesService:          @local::dunendlar_properties
+  DetectorClocksService:         @local::dunendlar_detectorclocks
+}
+
+dunendlartms_services:           @local::dunendlar_services
+dunendlartms_services.Geometry:  @local::dunendlartms_geo
+
+END_PROLOG

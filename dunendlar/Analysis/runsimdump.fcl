@@ -1,0 +1,27 @@
+#include "services_dunendlar.fcl"
+#include "simdumpmodule.fcl"
+
+process_name: SimDump
+
+source:
+{
+  module_type: RootInput
+}
+
+services:
+{
+  TFileService: { fileName: "simdump.root" }
+  @table::dunendlartms_services
+}
+
+
+physics:
+{
+  analyzers:
+  {
+    simdump: @local::simdump_dunendlartms
+  }
+
+  ana:  [ simdump ]
+  end_paths: [ ana ]
+}
