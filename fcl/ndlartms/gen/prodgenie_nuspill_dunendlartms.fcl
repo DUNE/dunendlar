@@ -1,0 +1,6 @@
+#include "prodgenie_nu_dunendlartms.fcl"
+
+process_name: GenieGen
+
+physics.producers.generator: @local::dunendlartms_genie_nu_spill
+outputs.out1.fileName:       "genie_nu_spill_gen.root"
