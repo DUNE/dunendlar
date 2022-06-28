@@ -21,6 +21,11 @@ defaultqual e20
 gdmldir product_dir gdml
 fwdir  product_dir config_data
 
+table_fragment_begin
+    envSet(GDK2NUFLUXXML, ${UPS_PROD_DIR}/xml/LBNFFlux.xml)
+table_fragment_end
+
+
 # With "product  version" table below, we now define depdendencies
 
 # Add the dependent product and version
