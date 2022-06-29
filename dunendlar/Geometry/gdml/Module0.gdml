@@ -1,5 +1,14 @@
-<?xml version="1.0" encoding="ASCII"?>
-<gdml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<gdml_simple_extension xmlns:gdml_simple_extension="http://www.example.org" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="SimpleExtension.xsd">
+    <extension>
+        <color name="test_color" R="0.1" G="0.2" B="0.3" A="1.0" />
+        <color name="magenta" R="1.0" G="0.0" B="1.0" A="1.0" />
+        <color name="green" R="0.0" G="1.0" B="0.0" A="1.0" />
+        <color name="red" R="1.0" G="0.0" B="0.0" A="1.0" />
+        <color name="blue" R="0.0" G="0.0" B="1.0" A="1.0" />
+        <color name="yellow" R="1.0" G="1.0" B="0.0" A="1.0" />
+        <color name="purple" R="0.5" G="0.0" B="0.5" A="1.0" />
+    </extension>
   <define>
     <position name="PCB_pos" unit="cm" x="0.06855" y="0.0" z="0.0"/>
     <position name="Pixel_pos_0.0" unit="cm" x="0.22985" y="-15.2973" z="-15.2973"/>
@@ -30878,8 +30887,11 @@
     <volume name="volTPCActive">
       <materialref ref="LAr"/>
       <solidref ref="TPCActive_shape"/>
-      <auxiliary auxtype="SensDet" auxvalue="TPCActive_shape"/>
+      <auxiliary auxtype="SensDet" auxvalue="SimEnergyDeposit"/>
       <auxiliary auxtype="EField" auxvalue="(500.0 V/cm, 0.0 V/cm, 0.0 V/cm)"/>
+      <colorref ref="red" />
+      <auxiliary auxtype="StepLimit" auxvalue="0.4" auxunit="mm" />
+      <auxiliary auxtype="Solid" auxvalue="True" />      
     </volume>
     <volume name="volTPC">
       <materialref ref="LAr"/>
@@ -31641,4 +31653,4 @@
   <setup name="Default" version="0">
     <world ref="volWorld"/>
   </setup>
-</gdml>
+</gdml_simple_extension>
