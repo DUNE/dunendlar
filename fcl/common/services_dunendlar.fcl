@@ -35,6 +35,18 @@ dunendlartms_geo:
   service_type: "Geometry"
 }
 
+dunendmodule0_geo:
+{
+  Name: "Module0"
+  GDML: "Module0.gdml" 
+  ROOT: "Module0.gdml"
+  SurfaceY: 0
+  DisableWiresInG4: false
+  SortingParameters: {}
+  service_type: "Geometry"
+}
+
+
 dunendlar_detproperties:         @local::standard_detproperties
 dunendlar_properties:            @local::standard_properties
 dunendlar_detectorclocks:        @local::standard_detectorclocks
@@ -50,5 +62,8 @@ dunendlar_services:
 
 dunendlartms_services:           @local::dunendlar_services
 dunendlartms_services.Geometry:  @local::dunendlartms_geo
+
+dunendmodule0_services:          @local::dunendlar_services
+dunendmodule0_services.Geometry: @local::dunendmodule0_geo
 
 END_PROLOG

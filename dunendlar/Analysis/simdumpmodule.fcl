@@ -9,4 +9,11 @@ simdump_dunendlartms:
                       "largeant:LArG4DetectorServicescinBoxlvTMS"]
 }
 
+simdump_dunendmodule0:
+{
+    module_type:         "SimDump"
+    GenieGenModuleLabel: "dummy"
+    SEDModuleLabels: ["largeant:LArG4DetectorServicevolTPCActive"]
+}
+
 END_PROLOG
