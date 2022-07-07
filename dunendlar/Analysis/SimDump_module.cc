@@ -20,8 +20,11 @@
 #include "art_root_io/TFileService.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "larcore/Geometry/Geometry.h"
 
 #include "TTree.h"
+#include "TFile.h"
+#include "TGeoManager.h"
 
 #include <vector>
 #include <string>
@@ -84,6 +87,13 @@ private:
   vector<float>  sed_x;
   vector<float>  sed_y;
   vector<float>  sed_z;
+  vector<float>  sed_startx;
+  vector<float>  sed_starty;
+  vector<float>  sed_startz;
+  vector<float>  sed_endx;
+  vector<float>  sed_endy;
+  vector<float>  sed_endz;
+  vector<float>  sed_energy;
   vector<int>    sed_id;
   vector<int>    sed_pdg;
   vector<string> sed_det;
@@ -171,6 +181,13 @@ void dunend::SimDump::analyze(art::Event const& e)
       sed_x.push_back(sed->X());
       sed_y.push_back(sed->Y());
       sed_z.push_back(sed->Z());
+      sed_startx.push_back(sed->StartX());
+      sed_starty.push_back(sed->StartY());
+      sed_startz.push_back(sed->StartZ());
+      sed_endx.push_back(sed->EndX());
+      sed_endy.push_back(sed->EndY());
+      sed_endz.push_back(sed->EndZ());
+      sed_energy.push_back(sed->Energy());
       sed_id.push_back(sed->TrackID());
       sed_pdg.push_back(sed->PdgCode());
       sed_det.push_back(det);
@@ -182,6 +199,13 @@ void dunend::SimDump::analyze(art::Event const& e)
 
 void dunend::SimDump::beginJob()
 {
+
+  art::ServiceHandle<geo::Geometry> geom;
+  TGeoManager *geoman = geom->ROOTGeoManager();
+  TFile *f = TFile::Open("geometry.root", "recreate");
+  geoman->Write("EDepSimGeometry");
+  f->Close();
+
   art::ServiceHandle<art::TFileService> tfs;
   fTree = tfs->make<TTree>("ndsim","ND simulation tree");
   fTree->Branch("nuPDG", &nuPDG);
@@ -209,6 +233,13 @@ void dunend::SimDump::beginJob()
   fTree->Branch("sed_x", &sed_x);
   fTree->Branch("sed_y", &sed_y);
   fTree->Branch("sed_z", &sed_z);
+  fTree->Branch("sed_startx", &sed_startx);
+  fTree->Branch("sed_starty", &sed_starty);
+  fTree->Branch("sed_startz", &sed_startz);
+  fTree->Branch("sed_endx", &sed_endx);
+  fTree->Branch("sed_endy", &sed_endy);
+  fTree->Branch("sed_endz", &sed_endz);
+  fTree->Branch("sed_energy", &sed_endz);
   fTree->Branch("sed_id", &sed_id);
   fTree->Branch("sed_pdg", &sed_pdg);
   fTree->Branch("sed_det", &sed_det);
@@ -240,6 +271,13 @@ void dunend::SimDump::reset(){
   sed_x.clear();
   sed_y.clear();
   sed_z.clear();
+  sed_startx.clear();
+  sed_starty.clear();
+  sed_startz.clear();
+  sed_endx.clear();
+  sed_endy.clear();
+  sed_endz.clear();
+  sed_energy.clear();
   sed_id.clear();
   sed_pdg.clear();
   sed_det.clear();
