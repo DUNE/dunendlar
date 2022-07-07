@@ -14,12 +14,15 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "canvas/Utilities/InputTag.h"
+#include "canvas/Persistency/Common/FindManyP.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art_root_io/TFileService.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 #include "lardataobj/Simulation/SimEnergyDeposit.h"
+#include "lardataobj/Simulation/GeneratedParticleInfo.h"
 #include "larcore/Geometry/Geometry.h"
 
 #include "TTree.h"
@@ -57,6 +60,7 @@ public:
 private:
 
   const art::InputTag fGenieGenModuleLabel;
+  const art::InputTag fGeantModuleLabel;
   vector<art::InputTag> fSEDModuleLabels;
 
   TTree *fTree;
@@ -83,7 +87,23 @@ private:
   vector<float> lep_dcosz;
   vector<float> t0;
 
-  // Geant4 information
+  // Geant4 MCParticle information
+  vector<int>    mcp_id;
+  vector<int>    mcp_mother;
+  vector<int>    mcp_pdg;
+  vector<int>    mcp_mcid;
+  vector<float>  mcp_energy;
+  vector<float>  mcp_px;
+  vector<float>  mcp_py;
+  vector<float>  mcp_pz;
+  vector<float>  mcp_startx;
+  vector<float>  mcp_starty;
+  vector<float>  mcp_startz;
+  vector<float>  mcp_endx;
+  vector<float>  mcp_endy;
+  vector<float>  mcp_endz;
+
+  // SimEnergyDeposit (sed) information
   vector<float>  sed_x;
   vector<float>  sed_y;
   vector<float>  sed_z;
@@ -106,6 +126,7 @@ private:
 dunend::SimDump::SimDump(fhicl::ParameterSet const& p)
   : EDAnalyzer{p}  ,
   fGenieGenModuleLabel(p.get<art::InputTag>("GenieGenModuleLabel")),
+  fGeantModuleLabel(p.get<art::InputTag>("GeantModuleLabel")),
   fSEDModuleLabels(p.get<vector<art::InputTag>>("SEDModuleLabels"))
 {
   // Call appropriate consumes<>() for any products to be retrieved by this module.
@@ -166,6 +187,36 @@ void dunend::SimDump::analyze(art::Event const& e)
       }
     }
   }
+
+  // Get Geant4 information
+
+  std::vector<art::Ptr<simb::MCParticle>> mcplist;
+  auto mcpListHandle = e.getHandle< std::vector<simb::MCParticle> >(fGeantModuleLabel);
+  if (mcpListHandle){
+    art::fill_ptr_vector(mcplist, mcpListHandle);
+  }
+  art::FindManyP<simb::MCTruth,sim::GeneratedParticleInfo> fmth(mcpListHandle, e, fGeantModuleLabel);
+
+  for (auto & mcp : mcplist){
+    mcp_id.push_back(mcp->TrackId());
+    mcp_mother.push_back(mcp->Mother());
+    mcp_pdg.push_back(mcp->PdgCode());
+    mcp_energy.push_back(mcp->E());
+    mcp_px.push_back(mcp->Px());
+    mcp_py.push_back(mcp->Py());
+    mcp_pz.push_back(mcp->Pz());
+    mcp_startx.push_back(mcp->Vx());
+    mcp_starty.push_back(mcp->Vy());
+    mcp_startz.push_back(mcp->Vz());
+    mcp_endx.push_back(mcp->EndPosition()[0]);
+    mcp_endy.push_back(mcp->EndPosition()[1]);
+    mcp_endz.push_back(mcp->EndPosition()[2]);
+    if (fmth.isValid()){
+      auto vmcth = fmth.at(mcp.key());
+      //cout<<vmcth.size()<<endl;
+      if (!vmcth.empty()) mcp_mcid.push_back(vmcth[0].key());
+    }
+ }
 
   // Get SimEnergyDeposit information
 
@@ -230,6 +281,21 @@ void dunend::SimDump::beginJob()
   fTree->Branch("lep_dcosz", &lep_dcosz);
   fTree->Branch("t0", &t0);
 
+  fTree->Branch("mcp_id", &mcp_id);
+  fTree->Branch("mcp_mother", &mcp_mother);
+  fTree->Branch("mcp_pdg", &mcp_pdg);
+  fTree->Branch("mcp_mcid", &mcp_mcid);
+  fTree->Branch("mcp_energy", &mcp_energy);
+  fTree->Branch("mcp_px", &mcp_px);
+  fTree->Branch("mcp_py", &mcp_py);
+  fTree->Branch("mcp_pz", &mcp_pz);
+  fTree->Branch("mcp_startx", &mcp_startx);
+  fTree->Branch("mcp_starty", &mcp_starty);
+  fTree->Branch("mcp_startz", &mcp_startz);
+  fTree->Branch("mcp_endx", &mcp_endx);
+  fTree->Branch("mcp_endy", &mcp_endy);
+  fTree->Branch("mcp_endz", &mcp_endz);
+
   fTree->Branch("sed_x", &sed_x);
   fTree->Branch("sed_y", &sed_y);
   fTree->Branch("sed_z", &sed_z);
@@ -268,6 +334,20 @@ void dunend::SimDump::reset(){
   lep_dcosy.clear();
   lep_dcosz.clear();
   t0.clear();
+  mcp_id.clear();
+  mcp_mother.clear();
+  mcp_pdg.clear();
+  mcp_mcid.clear();
+  mcp_energy.clear();
+  mcp_px.clear();
+  mcp_py.clear();
+  mcp_pz.clear();
+  mcp_startx.clear();
+  mcp_starty.clear();
+  mcp_startz.clear();
+  mcp_endx.clear();
+  mcp_endy.clear();
+  mcp_endz.clear();
   sed_x.clear();
   sed_y.clear();
   sed_z.clear();
