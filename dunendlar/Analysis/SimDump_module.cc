@@ -305,7 +305,7 @@ void dunend::SimDump::beginJob()
   fTree->Branch("sed_endx", &sed_endx);
   fTree->Branch("sed_endy", &sed_endy);
   fTree->Branch("sed_endz", &sed_endz);
-  fTree->Branch("sed_energy", &sed_endz);
+  fTree->Branch("sed_energy", &sed_energy);
   fTree->Branch("sed_id", &sed_id);
   fTree->Branch("sed_pdg", &sed_pdg);
   fTree->Branch("sed_det", &sed_det);
