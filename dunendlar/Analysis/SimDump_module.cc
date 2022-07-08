@@ -104,9 +104,6 @@ private:
   vector<float>  mcp_endz;
 
   // SimEnergyDeposit (sed) information
-  vector<float>  sed_x;
-  vector<float>  sed_y;
-  vector<float>  sed_z;
   vector<float>  sed_startx;
   vector<float>  sed_starty;
   vector<float>  sed_startz;
@@ -229,9 +226,6 @@ void dunend::SimDump::analyze(art::Event const& e)
       art::fill_ptr_vector(sedlist, sedListHandle);
     }
     for (auto & sed : sedlist){
-      sed_x.push_back(sed->X());
-      sed_y.push_back(sed->Y());
-      sed_z.push_back(sed->Z());
       sed_startx.push_back(sed->StartX());
       sed_starty.push_back(sed->StartY());
       sed_startz.push_back(sed->StartZ());
@@ -296,9 +290,6 @@ void dunend::SimDump::beginJob()
   fTree->Branch("mcp_endy", &mcp_endy);
   fTree->Branch("mcp_endz", &mcp_endz);
 
-  fTree->Branch("sed_x", &sed_x);
-  fTree->Branch("sed_y", &sed_y);
-  fTree->Branch("sed_z", &sed_z);
   fTree->Branch("sed_startx", &sed_startx);
   fTree->Branch("sed_starty", &sed_starty);
   fTree->Branch("sed_startz", &sed_startz);
@@ -348,9 +339,6 @@ void dunend::SimDump::reset(){
   mcp_endx.clear();
   mcp_endy.clear();
   mcp_endz.clear();
-  sed_x.clear();
-  sed_y.clear();
-  sed_z.clear();
   sed_startx.clear();
   sed_starty.clear();
   sed_startz.clear();
