@@ -64,6 +64,11 @@ private:
   vector<art::InputTag> fSEDModuleLabels;
 
   TTree *fTree;
+  // Run information
+  int run;
+  int subrun;
+  int event;
+
   // Genie information
   vector<int> nuPDG;
   vector<int> ccnc;
@@ -132,6 +137,10 @@ dunend::SimDump::SimDump(fhicl::ParameterSet const& p)
 void dunend::SimDump::analyze(art::Event const& e)
 {
   reset();
+
+  run = e.run();
+  subrun = e.subRun();
+  event = e.id().event();
 
   // * MC truth information
   std::vector<art::Ptr<simb::MCTruth> > mclist;
@@ -253,6 +262,10 @@ void dunend::SimDump::beginJob()
 
   art::ServiceHandle<art::TFileService> tfs;
   fTree = tfs->make<TTree>("ndsim","ND simulation tree");
+  fTree->Branch("run",&run,"run/I");
+  fTree->Branch("subrun",&subrun,"subrun/I");
+  fTree->Branch("event",&event,"event/I");
+
   fTree->Branch("nuPDG", &nuPDG);
   fTree->Branch("ccnc", &ccnc);
   fTree->Branch("mode", &mode);
@@ -303,7 +316,10 @@ void dunend::SimDump::beginJob()
 }
 
 void dunend::SimDump::reset(){
-  
+
+  run = -1;
+  subrun = -1;
+  event = -1;
   nuPDG.clear();
   ccnc.clear();
   mode.clear();
