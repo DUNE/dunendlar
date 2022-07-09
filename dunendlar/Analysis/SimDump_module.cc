@@ -91,7 +91,7 @@ private:
   vector<int>    mcp_id;
   vector<int>    mcp_mother;
   vector<int>    mcp_pdg;
-  vector<int>    mcp_mcid;
+  vector<int>    mcp_nuid;
   vector<float>  mcp_energy;
   vector<float>  mcp_px;
   vector<float>  mcp_py;
@@ -211,7 +211,7 @@ void dunend::SimDump::analyze(art::Event const& e)
     if (fmth.isValid()){
       auto vmcth = fmth.at(mcp.key());
       //cout<<vmcth.size()<<endl;
-      if (!vmcth.empty()) mcp_mcid.push_back(vmcth[0].key());
+      if (!vmcth.empty()) mcp_nuid.push_back(vmcth[0].key());
     }
  }
 
@@ -278,7 +278,7 @@ void dunend::SimDump::beginJob()
   fTree->Branch("mcp_id", &mcp_id);
   fTree->Branch("mcp_mother", &mcp_mother);
   fTree->Branch("mcp_pdg", &mcp_pdg);
-  fTree->Branch("mcp_mcid", &mcp_mcid);
+  fTree->Branch("mcp_nuid", &mcp_nuid);
   fTree->Branch("mcp_energy", &mcp_energy);
   fTree->Branch("mcp_px", &mcp_px);
   fTree->Branch("mcp_py", &mcp_py);
@@ -328,7 +328,7 @@ void dunend::SimDump::reset(){
   mcp_id.clear();
   mcp_mother.clear();
   mcp_pdg.clear();
-  mcp_mcid.clear();
+  mcp_nuid.clear();
   mcp_energy.clear();
   mcp_px.clear();
   mcp_py.clear();
