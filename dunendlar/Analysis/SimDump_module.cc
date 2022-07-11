@@ -70,55 +70,55 @@ private:
   int event;
 
   // Genie information
-  vector<int> nuPDG;
-  vector<int> ccnc;
-  vector<int> mode;
-  vector<float> enu;
-  vector<float> Q2;
-  vector<float> W;
-  vector<float> X;
-  vector<float> Y;
-  vector<int> hitnuc;
-  vector<int> target;
-  vector<float> nuvtxx;
-  vector<float> nuvtxy;
-  vector<float> nuvtxz;
-  vector<float> nu_dcosx;
-  vector<float> nu_dcosy;
-  vector<float> nu_dcosz;
-  vector<float> lep_mom;
-  vector<float> lep_dcosx;
-  vector<float> lep_dcosy;
-  vector<float> lep_dcosz;
-  vector<float> t0;
+  vector<int> nuPDG;            //Neutrino PDG code
+  vector<int> ccnc;             //0: CC; 1: NC
+  vector<int> mode;             //0: QE; 1: Resonance; 2: DIS; 3: Coherent pion; 10: MEC
+  vector<float> enu;            //Neutrino energy (GeV)
+  vector<float> Q2;             //Momentum transfer
+  vector<float> W;              //Invariant mass of hadronic system
+  vector<float> X;              //Bjorken-X
+  vector<float> Y;              //Hadronic-y
+  vector<int> hitnuc;           //PDG code of struck nucleon
+  vector<int> target;           //PDG code of target
+  vector<float> nuvtxx;         //neutrino vertex x (cm)
+  vector<float> nuvtxy;         //neutrino vertex y (cm)
+  vector<float> nuvtxz;         //neutrino vertex z (cm)
+  vector<float> nu_dcosx;       //neutrino direction cosine x
+  vector<float> nu_dcosy;       //neutrino direction cosine y
+  vector<float> nu_dcosz;       //neutrino direction cosine z
+  vector<float> lep_mom;        //lepton momentum (GeV)
+  vector<float> lep_dcosx;      //lepton direction cosine x
+  vector<float> lep_dcosy;      //lepton direction cosine y
+  vector<float> lep_dcosz;      //lepton direction cosine z
+  vector<float> t0;             //neutrino interaction time
 
   // Geant4 MCParticle information
-  vector<int>    mcp_id;
-  vector<int>    mcp_mother;
-  vector<int>    mcp_pdg;
-  vector<int>    mcp_nuid;
-  vector<float>  mcp_energy;
-  vector<float>  mcp_px;
-  vector<float>  mcp_py;
-  vector<float>  mcp_pz;
-  vector<float>  mcp_startx;
-  vector<float>  mcp_starty;
-  vector<float>  mcp_startz;
-  vector<float>  mcp_endx;
-  vector<float>  mcp_endy;
-  vector<float>  mcp_endz;
+  vector<int>    mcp_id;        //g4 track ID
+  vector<int>    mcp_mother;    //mother track ID
+  vector<int>    mcp_pdg;       //PDG code
+  vector<int>    mcp_nuid;      //GENIE index
+  vector<float>  mcp_energy;    //particle energy (GeV)
+  vector<float>  mcp_px;        //particle momentum px (GeV/c)
+  vector<float>  mcp_py;        //particle momentum py (GeV/c)
+  vector<float>  mcp_pz;        //particle momentum pz (GeV/c)
+  vector<float>  mcp_startx;    //particle start x (cm)
+  vector<float>  mcp_starty;    //particle start y (cm)
+  vector<float>  mcp_startz;    //particle start z (cm)
+  vector<float>  mcp_endx;      //particle end x (cm)
+  vector<float>  mcp_endy;      //particle end y (cm)
+  vector<float>  mcp_endz;      //particle end z (cm)
 
   // SimEnergyDeposit (sed) information
-  vector<float>  sed_startx;
-  vector<float>  sed_starty;
-  vector<float>  sed_startz;
-  vector<float>  sed_endx;
-  vector<float>  sed_endy;
-  vector<float>  sed_endz;
-  vector<float>  sed_energy;
-  vector<int>    sed_id;
-  vector<int>    sed_pdg;
-  vector<string> sed_det;
+  vector<float>  sed_startx;    //Edep start x (cm)
+  vector<float>  sed_starty;    //Edep start y (cm)
+  vector<float>  sed_startz;    //Edep start z (cm)
+  vector<float>  sed_endx;      //Edep end x (cm)
+  vector<float>  sed_endy;      //Edep end y (cm)
+  vector<float>  sed_endz;      //Edep end z (cm)
+  vector<float>  sed_energy;    //energy deposition (MeV)
+  vector<int>    sed_id;        //MCParticle index
+  vector<int>    sed_pdg;       //PDG code
+  vector<string> sed_det;       //Detector name
 
   void reset();
 
