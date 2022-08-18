@@ -10,11 +10,11 @@
 
 <!-- support classes (e.g., elements of data product classes) -->
 
- <class name="raw::Pixel" ClassVersion="10">
-  <version ClassVersion="10" checksum="1877388623"/>
+ <class name="raw::RawPixel" ClassVersion="10">
+  <version ClassVersion="10" checksum="4043678579"/>
  </class>
- <class name="std::vector<raw::Pixel>" />
- <class name="art::Ptr<raw::Pixel>" />
- <class name="art::Wrapper<vector<raw::Pixel> >"/>
+ <class name="std::vector<raw::RawPixel>" />
+ <class name="art::Ptr<raw::RawPixel>" />
+ <class name="art::Wrapper<vector<raw::RawPixel> >"/>
 
 </lcgdict>

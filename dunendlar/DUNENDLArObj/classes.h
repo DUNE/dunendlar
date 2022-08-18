@@ -9,7 +9,7 @@
 #include "canvas/Persistency/Common/Wrapper.h"
 #include "canvas/Persistency/Common/Assns.h"
 
-#include "dunendlar/DUNENDLArObj/Pixel.h"
+#include "dunendlar/DUNENDLArObj/RawPixel.h"
 
 #include <vector>
 #include <map>

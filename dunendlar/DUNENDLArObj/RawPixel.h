@@ -1,13 +1,13 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// Pixel.h
+// RawPixel.h
 // Data product to save ND LAr raw data 
 // Tingjun Yang, August 18, 2022
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef  Pixel_H
-#define  Pixel_H
+#ifndef  RAWPIXEL_H
+#define  RAWPIXEL_H
 
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::Compress_t, raw::Channel_t
 
@@ -16,14 +16,14 @@
 
 namespace raw {
 
-  class Pixel
+  class RawPixel
   {
 
   public:
 
-  Pixel() : fChannel(0), fADC(0), fTimeStamp(0) {}; // Default constructor
+  RawPixel() : fChannel(0), fADC(0), fTimeStamp(0) {}; // Default constructor
 
-  Pixel(ChannelID_t channel,
+  RawPixel(ChannelID_t channel,
         short       ADC,
         uint32_t    timeStamp)
     : fChannel(channel), 
@@ -45,4 +45,4 @@ namespace raw {
 
 } // namespace raw
 
-#endif // Pixel_H
+#endif // RawPixel_H
