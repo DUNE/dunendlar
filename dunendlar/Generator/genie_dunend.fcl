@@ -26,6 +26,7 @@ dunendlartms_genie_nu.FluxSearchPaths:         "/cvmfs/dune.osgstorage.org/pnfs/
 dunendlartms_genie_nu.FluxFiles:               ["g4lbne_v3r5p4_QGSP_BERT_OptimizedEngineeredNov2017_neutrino_*root"]
 dunendlartms_genie_nu.FluxCopyMethod:          "DIRECT"
 dunendlartms_genie_nu.FluxType:                "dk2nu"
+dunendlartms_genie_nu.MaxFluxFileMB:           500
 dunendlartms_genie_nu.TopVolume:               "volWorld"
 dunendlartms_genie_nu.EventsPerSpill:          1
 dunendlartms_genie_nu.POTPerSpill:             0
