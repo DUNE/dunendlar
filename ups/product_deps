@@ -35,17 +35,18 @@ larsoft             v09_53_02
 webevd              v09_09_02
 genie_xsec          v3_00_04a
 genie_phyopt        v3_00_04
+duneutil            v09_58_01d00
 cetbuildtools       v8_20_00    -       only_for_build
 end_product_list
 
 
 # We now define allowed qualifiers and the corresponding qualifiers for the depdencies.
 # Make a table by adding columns before "notes".
-qualifier        larsoft     webevd     genie_xsec                 genie_phyopt    notes
-c7:debug         c7:debug    c7:debug   G1810a0211a:k250:e1000     dkcharmtau      -nq-          
-c7:prof          c7:prof     c7:prof    G1810a0211a:k250:e1000     dkcharmtau      -nq-          
-e20:debug        e20:debug   e20:debug  G1810a0211a:k250:e1000     dkcharmtau      -nq-          
-e20:prof         e20:prof    e20:prof   G1810a0211a:k250:e1000     dkcharmtau      -nq-          
+qualifier        larsoft     webevd     genie_xsec                 genie_phyopt    duneutil     notes
+c7:debug         c7:debug    c7:debug   G1810a0211a:k250:e1000     dkcharmtau      c7:debug     -nq-          
+c7:prof          c7:prof     c7:prof    G1810a0211a:k250:e1000     dkcharmtau      c7:prof      -nq-          
+e20:debug        e20:debug   e20:debug  G1810a0211a:k250:e1000     dkcharmtau      e20:debug    -nq-          
+e20:prof         e20:prof    e20:prof   G1810a0211a:k250:e1000     dkcharmtau      e20:prof     -nq-          
 
 end_qualifier_list
 
