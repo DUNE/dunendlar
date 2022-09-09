@@ -20,7 +20,7 @@ cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 # cetbuildtools contains our cmake modules
 find_package(cetbuildtools REQUIRED)
 
-project(dunendlar VERSION 01.00.00 LANGUAGES CXX)
+project(dunendlar VERSION 01.01.00 LANGUAGES CXX)
 
 ## Make target names shorter (dunecore::X vs dunecore::dune_X).
 # set(dunecore_NAMESPACE dune)
@@ -46,7 +46,8 @@ cet_report_compiler_flags()
 # these are minimum required versions, not the actual product versions
 #find_ups_product( art_root_io )
 find_ups_root()
-find_ups_product( larsoft )
+find_ups_product( dunecore )
+#find_ups_product( larsoft )
 find_ups_product( larcoreobj )
 
 # Define an export set for tool support to enable simpler per-tool build

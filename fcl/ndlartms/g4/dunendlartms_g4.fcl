@@ -95,12 +95,14 @@ ParticleListAction: {service_type: "ParticleListActionService"
                              # --- This forces that true penultimate point to be saved, thus preserving the info
 }
   GeometryConfigurationWriter: {}
+  FileCatalogMetadata:   @local::art_file_catalog_mc
   @table::dunendlartms_services
 }
 
 outputs: {
 out1: {
   module_type: RootOutput
+  dataTier:    "simulated"
   fileName: "%ifb_g4.root"
   }
 }
