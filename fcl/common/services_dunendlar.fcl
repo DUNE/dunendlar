@@ -2,7 +2,7 @@
 #include "detectorproperties.fcl"
 #include "larproperties.fcl"
 #include "detectorclocks.fcl"
-#include "sam_dunend.fcl"
+#include "sam_dune.fcl"
 
 BEGIN_PROLOG
 
