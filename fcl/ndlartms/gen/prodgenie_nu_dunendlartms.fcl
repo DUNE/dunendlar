@@ -10,6 +10,7 @@ services:
   MemoryTracker:         {} # default is one
   RandomNumberGenerator: {} #ART native random number generator
   GeometryConfigurationWriter: {}
+  FileCatalogMetadata:   @local::art_file_catalog_mc
   @table::dunendlartms_services
   IFDH: {}
 }
@@ -60,6 +61,7 @@ outputs:
  {
    module_type: RootOutput
    fileName:    "genie_nu_gen.root" #default file name, can override from command line with -o or --output
+   dataTier: "generated"
    compressionLevel: 1
  }
 }
