@@ -31,8 +31,6 @@ table_fragment_end
 # Add the dependent product and version
 
 product             version
-#larsoft             v09_53_02
-#duneutil            v09_58_01d00
 dunecore            v09_58_01d00
 webevd              v09_09_05
 genie_xsec          v3_00_04a
