@@ -1,0 +1,19 @@
+process_name: testmodule0reader
+
+source: {
+  module_type: NDLArModule0RawInput
+}
+
+outputs: {
+  rootout: {
+    module_type: RootOutput
+    fileName: "tmpmodule0.root"
+    dataTier:    "full-reconstructed"
+    compressionLevel: 1
+  }
+}
+
+physics: {
+  output : [ rootout ]
+  end_paths : [ output ]
+}
