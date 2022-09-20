@@ -49,6 +49,17 @@ find_ups_root()
 find_ups_product( dunecore )
 #find_ups_product( larsoft )
 find_ups_product( larcoreobj )
+find_ups_product( hdf5 )
+find_ups_product( dunedaqdataformats )
+find_ups_product( dunedetdataformats )
+
+string(TOUPPER ${CMAKE_BUILD_TYPE} BTYPE_UC )
+if( ${BTYPE_UC} MATCHES "DEBUG" )
+ find_library( LIBHDF5 NAMES hdf5_debug PATHS ENV HDF5_LIB NO_DEFAULT_PATH)
+else()
+ find_library( LIBHDF5 NAMES hdf5 PATHS ENV HDF5_LIB NO_DEFAULT_PATH)
+endif()
+include_directories(${HDF5_INCLUDE_DIRS})
 
 # Define an export set for tool support to enable simpler per-tool build
 # call.

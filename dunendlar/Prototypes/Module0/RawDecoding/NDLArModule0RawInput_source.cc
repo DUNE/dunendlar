@@ -14,6 +14,7 @@ dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
   pretend_module_name = ps.get<std::string>("raw_data_label", "daq");
   fLogLevel = ps.get<int>("LogLevel", 0);
   fConfigRunNumber = ps.get<size_t>("RunNumber",1);  
+  fCurRun = fConfigRunNumber;
   fConfigSubRunNumber = ps.get<size_t>("SubRunNumber",1);
   fNMessagesPerEvent = ps.get<int>("NMessagesPerEvent",1000);  // number of messages per event
   rh.reconstitutes<std::vector<raw::RawPixel>, art::InEvent>(pretend_module_name);
@@ -22,7 +23,7 @@ dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
 void dune::NDLArModule0RawInputDetail::readFile(
                                                 std::string const & filename, art::FileBlock*& fb) {
   fHDFFile = dune::HDF5Utils::openFile(filename);
-  fHDFFile->runNumber = fConfigRunNumber;
+  fHDFFile->runNumber = fCurRun;
   fCurEvent = 0; 
 
   // read all the io_groups into memory.  Only reason to do this is because we need to read all the
@@ -107,7 +108,7 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
       return false;
     }
 
-  size_t run_id = fConfigRunNumber;
+  size_t run_id = fCurRun;
 
   //Where to get event number?  Event number just starts counting at 1.
 
