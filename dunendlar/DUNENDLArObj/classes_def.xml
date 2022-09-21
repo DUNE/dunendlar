@@ -17,4 +17,11 @@
  <class name="art::Ptr<raw::RawPixel>" />
  <class name="art::Wrapper<vector<raw::RawPixel> >"/>
 
+ <class name="raw::Module0Trigger" ClassVersion="10">
+  <version ClassVersion="10" checksum="4205740785"/>
+ </class>
+ <class name="std::vector<raw::Module0Trigger>" />
+ <class name="art::Ptr<raw::Module0Trigger>" />
+ <class name="art::Wrapper<vector<raw::Module0Trigger> >"/>
+
 </lcgdict>

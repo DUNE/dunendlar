@@ -4,6 +4,7 @@
 #include "NDLArModule0RawInput.h"
 #include "dunecore/DuneObj/DUNEHDF5FileInfo.h"
 #include "dunendlar/DUNENDLArObj/RawPixel.h"
+#include "dunendlar/DUNENDLArObj/Module0Trigger.h"
 #include "detdataformats/pacman/PACMANFrame.hpp"
 
 dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
@@ -17,6 +18,7 @@ dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
   fCurRun = fConfigRunNumber;
   fConfigSubRunNumber = ps.get<size_t>("SubRunNumber",1);
   rh.reconstitutes<std::vector<raw::RawPixel>, art::InEvent>(pretend_module_name);
+  rh.reconstitutes<std::vector<raw::Module0Trigger>, art::InEvent>(pretend_module_name);
 }
 
 void dune::NDLArModule0RawInputDetail::readFile(
@@ -120,6 +122,9 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 
   dunedaq::detdataformats::pacman::PACMANFrame pmf;
   std::unique_ptr<std::vector<raw::RawPixel>> oPixels( new std::vector<raw::RawPixel> );
+  std::unique_ptr<std::vector<raw::Module0Trigger>> oTriggers( new std::vector<raw::Module0Trigger> );
+
+  oTriggers->emplace_back(fLastTrigBits, fLastTrigTS);
 
   while (true)
     {
@@ -166,19 +171,27 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 
               if ( mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::TRIG_WORD )
                 {
-                  // int trigBits =  mwp->word._null[0]; // put these somewhere -- trigger data product?
+		  fLastTrigBits = fCurTrigBits;
+                  fCurTrigBits =  mwp->word._null[0];
                   fLastTrigTS = fCurTrigTS;
                   fCurTrigTS = (mwp->word._null[6] << 24) + (mwp->word._null[5] << 16) + (mwp->word._null[4] << 8) + mwp->word._null[3];
                   if (fLogLevel > 0)
                     {
-                      std::cout << "NDLArModule0Source: Found a trigger: " << fCurTrigTS << " Trigger bits: " << (int) mwp->word._null[0] << std::endl;
+                      std::cout << "NDLArModule0Source: Found a trigger: " << fCurTrigTS << " Trigger bits: " << (int) fCurTrigBits << std::endl;
                     }
+
+		  // If we see multiple trigger words, write them all to the output stream.  If there is pixel data between trigger words,
+		  // then start a new event.
+
+		  if (oPixels->size() == 0)
+		    {
+                       oTriggers->emplace_back(fCurTrigBits, fCurTrigTS);
+		    }
                 }
                   
               // determine whether to finish up the event.  Either we have a new trigger timestamp or we ran out of data
 
-              if ( (fCurTrigTS != fLastTrigTS ||
-                    fCurMessage + 1 >= fNMessages) && oPixels->size() > 0 )
+              if ( (fCurTrigTS != fLastTrigTS || fCurMessage + 1 >= fNMessages) && oPixels->size() > 0 )
                 {
                   // this format of the timestamp is almost certainly the wrong thing to do for now.
 
@@ -207,6 +220,7 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
                   outE = pmaker.makeEventPrincipal(run_id, 1, fCurEvent, artTrigStamp);
 
                   put_product_in_principal(std::move(oPixels), *outE, pretend_module_name,"");
+                  put_product_in_principal(std::move(oTriggers), *outE, pretend_module_name,"");
 
                   fLastTrigTS = fCurTrigTS;
                   fCurMessage++;

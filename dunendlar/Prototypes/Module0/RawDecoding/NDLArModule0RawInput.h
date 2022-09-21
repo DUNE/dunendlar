@@ -65,6 +65,8 @@ class dune::NDLArModule0RawInputDetail {
   size_t fCurMessage;
   uint32_t fCurTrigTS;
   uint32_t fLastTrigTS;
+  uint8_t fLastTrigBits;
+  uint8_t fCurTrigBits;
 
   // buffer for i/o groups
   typedef struct iogroupstruct_t {

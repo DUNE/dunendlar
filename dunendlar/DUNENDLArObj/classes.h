@@ -10,6 +10,7 @@
 #include "canvas/Persistency/Common/Assns.h"
 
 #include "dunendlar/DUNENDLArObj/RawPixel.h"
+#include "dunendlar/DUNENDLArObj/Module0Trigger.h"
 
 #include <vector>
 #include <map>
