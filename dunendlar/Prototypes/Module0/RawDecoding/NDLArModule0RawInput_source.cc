@@ -189,9 +189,10 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 		    }
                 }
                   
-              // determine whether to finish up the event.  Either we have a new trigger timestamp or we ran out of data
+              // determine whether to finish up the event.  Either we have a new trigger or we ran out of data
 
-              if ( (fCurTrigTS != fLastTrigTS || fCurMessage + 1 >= fNMessages) && oPixels->size() > 0 )
+              if ( (mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::TRIG_WORD
+		    || fCurMessage + 1 >= fNMessages) && oPixels->size() > 0 )
                 {
                   // this format of the timestamp is almost certainly the wrong thing to do for now.
 
