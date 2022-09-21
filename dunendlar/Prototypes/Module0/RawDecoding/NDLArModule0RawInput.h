@@ -64,6 +64,7 @@ class dune::NDLArModule0RawInputDetail {
   size_t fCurRun;  // triggers are not divided up in the file, so we keep track here.
   size_t fCurMessage;
   uint32_t fCurTrigTS;
+  uint32_t fLastTrigTS;
 
   // buffer for i/o groups
   typedef struct iogroupstruct_t {
