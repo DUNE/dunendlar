@@ -16,7 +16,6 @@ dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
   fConfigRunNumber = ps.get<size_t>("RunNumber",1);  
   fCurRun = fConfigRunNumber;
   fConfigSubRunNumber = ps.get<size_t>("SubRunNumber",1);
-  fNMessagesPerEvent = ps.get<int>("NMessagesPerEvent",1000);  // number of messages per event
   rh.reconstitutes<std::vector<raw::RawPixel>, art::InEvent>(pretend_module_name);
 }
 
@@ -24,7 +23,9 @@ void dune::NDLArModule0RawInputDetail::readFile(
                                                 std::string const & filename, art::FileBlock*& fb) {
   fHDFFile = dune::HDF5Utils::openFile(filename);
   fHDFFile->runNumber = fCurRun;
-  fCurEvent = 0; 
+  fCurEvent = 0;
+  fCurMessage = 0;
+  fCurTrigTS = 0;
 
   // read all the io_groups into memory.  Only reason to do this is because we need to read all the
   // messages into memory at the same time too.  The i/o groups take less space.
@@ -64,7 +65,6 @@ void dune::NDLArModule0RawInputDetail::readFile(
   fRData = (hvl_t *) malloc (dims[0] * sizeof (hvl_t));
   H5Dread(datasetid, fVlt, H5S_ALL, H5S_ALL, H5P_DEFAULT, fRData);
   fNMessages = dims[0];
-  fNEvents = fNMessages/fNMessagesPerEvent;
   H5Dclose(datasetid);
 
   if (fIogBuff.size() != dims[0])
@@ -75,17 +75,10 @@ void dune::NDLArModule0RawInputDetail::readFile(
 
   MF_LOG_INFO("NDLArModule0RawInput")
     << "HDF5 file " << filename << " with run number: " <<
-    fHDFFile->runNumber  << " and " <<
-    fNEvents << " events of length " << fNMessagesPerEvent << " messages.";
-  size_t rdr = fNMessages % fNMessagesPerEvent; 
-  if ( rdr != 0)
-    {
-      MF_LOG_INFO("NDLArModule0RawInput") << "And one event with " << rdr << " messages.";
-    }
+    fHDFFile->runNumber << std::endl;
 
   fb = new art::FileBlock(art::FileFormatVersion(1, "RawEvent2011"),
                           filename);
-
 }
 
 bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const inR,
@@ -103,42 +96,36 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 
   // this also covers the case where fNMessages is zero. 
 
-  if (fCurEvent * fNMessagesPerEvent >= fNMessages) 
+  if (fCurMessage >= fNMessages) 
     {
       return false;
     }
 
   size_t run_id = fCurRun;
 
-  //Where to get event number?  Event number just starts counting at 1.
+  //Where to get event number?  Event number just starts counting at 1 for each input file,
+  // and the run number increments when the file is closed.  That way the config run number
+  // is used for the first file.
 
   fCurEvent++;
 
   // decode messages and make RawPixel data products
 
-  // trigTimeStamp is NOT time but Clock-tick since the epoch.
-  uint64_t trigTimeStamp = 0;   // get time stamp from the first message being decoded
-
   dunedaq::detdataformats::pacman::PACMANFrame pmf;
   std::unique_ptr<std::vector<raw::RawPixel>> oPixels( new std::vector<raw::RawPixel> );
-  size_t imlow = fNMessagesPerEvent * (fCurEvent - 1);
-  size_t imhighp = fNMessagesPerEvent * (fCurEvent);  // high index plus 1
-  if (imhighp > fNMessages)
+
+  while (true)
     {
-      imhighp = fNMessages;   // last event is short, just pick up the remainder.
-    }
-  for (size_t imessage = imlow; imessage < imhighp; ++imessage)
-    {
-      void *messageptr = fRData[imessage].p;
+      void *messageptr = fRData[fCurMessage].p;
       dunedaq::detdataformats::pacman::PACMANFrame::PACMANMessageHeader *hdr = pmf.get_msg_header(messageptr);
       
       dunedaq::detdataformats::pacman::PACMANFrame::msg_type mtype = hdr->type;
-      //std::cout << "PACMAN message[" << imessage << "] nwords: " << hdr->words << " message type: " << mtype << std::endl;
+      //std::cout << "PACMAN message[" << fCurMessage << "] nwords: " << hdr->words << " message type: " << mtype << std::endl;
 
       if (mtype == dunedaq::detdataformats::pacman::PACMANFrame::msg_type::DATA_MSG)
         {
           //std::cout << "unpacking data words" << std::endl;
-          for (size_t iword = 0; iword<hdr->words; ++iword)
+          for (size_t iword = 0; iword < hdr->words; ++iword)
             {
               dunedaq::detdataformats::pacman::PACMANFrame::PACMANMessageWord* mwp = pmf.get_msg_word(messageptr,iword);
               //std::cout << "word[" << iword << "] type: " 
@@ -149,56 +136,71 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
               //          << " adc: " << mwp->data_word.larpix_word.data_packet.dataword 
               //          << " timestamp: " << mwp->data_word.larpix_word.data_packet.timestamp 
               //          << " trigger_type: " << mwp->data_word.larpix_word.data_packet.trigger_type 
-              //          << " io_group: " << (int) fIogBuff.at(imessage).iog
+              //          << " io_group: " << (int) fIogBuff.at(fCurMessage).iog
               //          << std::endl;
-              raw::ChannelID_t chan = fIogBuff.at(imessage).iog +       // to do:  map channels
-                (int) mwp->data_word.channel_id + 
-                mwp->data_word.larpix_word.data_packet.chipid + 
-                mwp->data_word.larpix_word.data_packet.channelid;
-              int adc = mwp->data_word.larpix_word.data_packet.dataword;
-              unsigned int ts = mwp->data_word.larpix_word.data_packet.timestamp;
-              if (trigTimeStamp == 0) 
-                {
-                  trigTimeStamp = ts;
-                }
-              uint32_t ts32 = ts & 0xFFFFFFFF;
-              oPixels->emplace_back(chan, adc, ts32 );
+
+	      if (mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::DATA_WORD)
+		{
+		  raw::ChannelID_t chan = fIogBuff.at(fCurMessage).iog +       // to do:  map channels
+		    (int) mwp->data_word.channel_id + 
+		    mwp->data_word.larpix_word.data_packet.chipid + 
+		    mwp->data_word.larpix_word.data_packet.channelid;
+
+		  int adc = mwp->data_word.larpix_word.data_packet.dataword;  // it's a uint16_t in the message, and a short in rawpixel
+		  uint32_t ts = mwp->data_word.larpix_word.data_packet.timestamp;
+		  uint32_t ts32 = ts & 0xFFFFFFFF;
+		  oPixels->emplace_back(chan, adc, ts32 );
+		}
+
+	      // determine whether to finish up the event
+
+	      if ( (mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::TRIG_WORD ||
+		    fCurMessage + 1 >= fNMessages) && oPixels->size() > 0 )
+		{
+		  // this format of the timestamp is almost certainly the wrong thing to do for now.
+
+		  uint64_t getTrigTime = formatTrigTimeStamp (fCurTrigTS);
+		  // std::cout << "getTrigTime :" << getTrigTime << std::endl;
+  
+		  art::Timestamp artTrigStamp (getTrigTime);
+		  // std::cout << "artTrigStamp :" << artTrigStamp.value() << std::endl;
+
+		  // make new run if inR is 0 or if the run has changed
+		  if (inR == 0 || inR->run() != run_id) {
+		    outR = pmaker.makeRunPrincipal(run_id,artTrigStamp);
+		  }
+
+		  // make new subrun if inSR is 0 or if the subrun has changed
+		  art::SubRunID subrun_check(run_id, 1);
+		  if (inSR == 0 || subrun_check != inSR->subRunID()) {
+		    outSR = pmaker.makeSubRunPrincipal(run_id, 1, artTrigStamp);
+		  }
+		  outE = pmaker.makeEventPrincipal(run_id, 1, fCurEvent, artTrigStamp);
+		  //std::cout << "Event Time Stamp :" << event.time() << std::endl;
+
+		  put_product_in_principal(std::move(oPixels), *outE, pretend_module_name,"");
+                  fCurMessage++;
+
+		  return true;
+		}
+
+	      // get the trigger timestamp if we are reading a trigger word.
+
+	      if ( mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::TRIG_WORD )
+		{
+		  fCurTrigTS = (mwp->word._null[3] << 24) + (mwp->word._null[2] << 16) + (mwp->word._null[1] << 8) + mwp->word._null[0];
+		}
+	      // to do -- do we subtract the trigger time from the data timestamp?  What about data in the file that
+	      // come before the first trigger data word?
             }
         }
+      fCurMessage++;
     }
-
-  // this format of the timestamp is almost certainly the wrong thing to do for now.
-
-  uint64_t getTrigTime = formatTrigTimeStamp (trigTimeStamp);
-  // std::cout << "getTrigTime :" << getTrigTime << std::endl;
-  
-  art::Timestamp artTrigStamp (getTrigTime);
-  // std::cout << "artTrigStamp :" << artTrigStamp.value() << std::endl;
-
-  // make new run if inR is 0 or if the run has changed
-  if (inR == 0 || inR->run() != run_id) {
-    outR = pmaker.makeRunPrincipal(run_id,artTrigStamp);
-  }
-
-  // make new subrun if inSR is 0 or if the subrun has changed
-  art::SubRunID subrun_check(run_id, 1);
-  if (inSR == 0 || subrun_check != inSR->subRunID()) {
-    outSR = pmaker.makeSubRunPrincipal(run_id, 1, artTrigStamp);
-  }
-
-  outE = pmaker.makeEventPrincipal(run_id, 1, fCurEvent, artTrigStamp);
-  //std::cout << "Event Time Stamp :" << event.time() << std::endl;
- 
-
-  put_product_in_principal(std::move(oPixels), *outE, pretend_module_name,"");
-
-  return true;
 }
 
 //typedef for shorthand
 namespace dune {
   using NDLArModule0RawInputSource = art::Source<NDLArModule0RawInputDetail>;
 }
-
 
 DEFINE_ART_INPUT_SOURCE(dune::NDLArModule0RawInputSource)
