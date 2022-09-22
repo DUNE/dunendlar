@@ -19,20 +19,24 @@ namespace raw {
 
   public:
 
-  Module0Trigger() : fTriggerBits(0), fTimeStamp(0) {}; // Default constructor
+  Module0Trigger() : fIO_Group(0), fTriggerBits(0), fTimeStamp(0) {}; // Default constructor
 
-  Module0Trigger(uint8_t     triggerBits,
+  Module0Trigger(uint8_t     io_group,
+		 uint8_t     triggerBits,
                  uint32_t    timeStamp)
-    : fTriggerBits(triggerBits), 
+    : fIO_Group(io_group),
+      fTriggerBits(triggerBits), 
       fTimeStamp(timeStamp) {};
 
+    uint8_t     GetIO_Group()      const { return fIO_Group; };
     uint8_t     GetTriggerBits()   const { return fTriggerBits; };
     uint32_t    GetTimeStamp()     const { return fTimeStamp; };
 
   private:
 
-    uint8_t fTriggerBits;   ///< Trigger Bits
-    uint32_t    fTimeStamp; ///< Time stamp of the packet
+    uint8_t     fIO_Group;      ///< IO Group -- corresponds to a TPC
+    uint8_t     fTriggerBits;   ///< Trigger Bits
+    uint32_t    fTimeStamp;     ///< Time stamp of the packet
   };
 
 

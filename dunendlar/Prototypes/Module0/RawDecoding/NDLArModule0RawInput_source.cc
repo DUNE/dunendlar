@@ -124,7 +124,7 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
   std::unique_ptr<std::vector<raw::RawPixel>> oPixels( new std::vector<raw::RawPixel> );
   std::unique_ptr<std::vector<raw::Module0Trigger>> oTriggers( new std::vector<raw::Module0Trigger> );
 
-  oTriggers->emplace_back(fLastTrigBits, fLastTrigTS);
+  oTriggers->emplace_back(fLastIO_Group, fLastTrigBits, fLastTrigTS);
 
   while (true)
     {
@@ -175,6 +175,9 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
                   fCurTrigBits =  mwp->word._null[0];
                   fLastTrigTS = fCurTrigTS;
                   fCurTrigTS = (mwp->word._null[6] << 24) + (mwp->word._null[5] << 16) + (mwp->word._null[4] << 8) + mwp->word._null[3];
+		  fLastIO_Group = fCurIO_Group;
+		  fCurIO_Group = fIogBuff.at(fCurMessage).iog;
+
                   if (fLogLevel > 0)
                     {
                       std::cout << "NDLArModule0Source: Found a trigger: " << fCurTrigTS << " Trigger bits: " << (int) fCurTrigBits << std::endl;
@@ -185,7 +188,7 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 
 		  if (oPixels->size() == 0)
 		    {
-                       oTriggers->emplace_back(fCurTrigBits, fCurTrigTS);
+		      oTriggers->emplace_back(fCurIO_Group, fCurTrigBits, fCurTrigTS);
 		    }
                 }
                   
@@ -224,6 +227,8 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
                   put_product_in_principal(std::move(oTriggers), *outE, pretend_module_name,"");
 
                   fLastTrigTS = fCurTrigTS;
+                  fLastTrigBits = fCurTrigBits;
+                  fLastIO_Group = fCurIO_Group;
                   fCurMessage++;
 
                   return true;
