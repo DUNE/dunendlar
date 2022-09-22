@@ -59,6 +59,7 @@ class dune::NDLArModule0RawInputDetail {
 
   size_t fConfigRunNumber;
   size_t fConfigSubRunNumber;
+  size_t fConfigNTickTrigger;
   size_t fNMessages;
   size_t fCurEvent;  // triggers are not divided up in the file, so we keep track here.
   size_t fCurRun;  // triggers are not divided up in the file, so we keep track here.

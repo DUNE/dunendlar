@@ -17,6 +17,9 @@ dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
   fConfigRunNumber = ps.get<size_t>("RunNumber",1);  
   fCurRun = fConfigRunNumber;
   fConfigSubRunNumber = ps.get<size_t>("SubRunNumber",1);
+  fConfigNTickTrigger = ps.get<size_t>("NTickTrigger",2000000);  // number of timestamp ticks to go 
+                                                                 // before starting a new event, even if new 
+                                                                 // trigger words come in
   rh.reconstitutes<std::vector<raw::RawPixel>, art::InEvent>(pretend_module_name);
   rh.reconstitutes<std::vector<raw::Module0Trigger>, art::InEvent>(pretend_module_name);
 }
@@ -171,11 +174,8 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 
               if ( mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::TRIG_WORD )
                 {
-		  fLastTrigBits = fCurTrigBits;
                   fCurTrigBits =  mwp->word._null[0];
-                  fLastTrigTS = fCurTrigTS;
                   fCurTrigTS = (mwp->word._null[6] << 24) + (mwp->word._null[5] << 16) + (mwp->word._null[4] << 8) + mwp->word._null[3];
-		  fLastIO_Group = fCurIO_Group;
 		  fCurIO_Group = fIogBuff.at(fCurMessage).iog;
 
                   if (fLogLevel > 0)
@@ -186,16 +186,19 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 		  // If we see multiple trigger words, write them all to the output stream.  If there is pixel data between trigger words,
 		  // then start a new event.
 
-		  if (oPixels->size() == 0)
+		  if (fCurTrigTS < fLastTrigTS + fConfigNTickTrigger && fCurTrigTS >= fLastTrigTS)
 		    {
 		      oTriggers->emplace_back(fCurIO_Group, fCurTrigBits, fCurTrigTS);
 		    }
                 }
                   
-              // determine whether to finish up the event.  Either we have a new trigger or we ran out of data
+              // determine whether to finish up the event.  
+	      // Finish the event if the new trigger is at least fConfigNTickTrigger from the one that starts
+	      // the event or if the timestamp counter reset
 
               if ( (mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::TRIG_WORD
-		    || fCurMessage + 1 >= fNMessages) && oPixels->size() > 0 )
+		    && (fCurTrigTS >= fLastTrigTS + fConfigNTickTrigger || fCurTrigTS < fLastTrigTS ))
+		    || fCurMessage + 1 >= fNMessages)
                 {
                   // this format of the timestamp is almost certainly the wrong thing to do for now.
 
