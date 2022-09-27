@@ -8,6 +8,7 @@ simple_plugin(NDLArModule0RawInput "source"
          art::Framework_Principal
          art::Framework_Services_Registry
 	 dunecore::HDF5Utils
+	 dunendlar::Prototypes_Module0_ChannelMap_NDLArModule0ChannelMapService_service
          LIBHDF5 
          pthread
          z

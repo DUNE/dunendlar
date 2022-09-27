@@ -1,3 +1,4 @@
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Core/InputSourceMacros.h"
 #include "art/Framework/IO/Sources/Source.h"
 #include "art/Framework/IO/Sources/SourceTraits.h"
@@ -6,6 +7,7 @@
 #include "dunendlar/DUNENDLArObj/RawPixel.h"
 #include "dunendlar/DUNENDLArObj/Module0Trigger.h"
 #include "detdataformats/pacman/PACMANFrame.hpp"
+#include "dunendlar/Prototypes/Module0/ChannelMap/NDLArModule0ChannelMapService.h"
 
 dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
                                                              fhicl::ParameterSet const & ps,
@@ -100,7 +102,9 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
                                                 art::EventPrincipal*& outE) 
 {
   using namespace dune::HDF5Utils;
-  
+
+  art::ServiceHandle<dune::NDLArModule0ChannelMapService> cmap;
+
   // Establish default 'results'
   outR = 0;
   outSR = 0;
@@ -162,10 +166,16 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
                                 << std::endl;
                     }
 
-                  raw::ChannelID_t chan = fIogBuff.at(fCurMessage).iog +       // to do:  map channels
-                    (int) mwp->data_word.channel_id + 
-                    mwp->data_word.larpix_word.data_packet.chipid + 
-                    mwp->data_word.larpix_word.data_packet.channelid;
+		  auto cinfo = cmap->GetChanInfoFromElectronics(
+		                                                fIogBuff.at(fCurMessage).iog,
+								mwp->data_word.channel_id,
+								mwp->data_word.larpix_word.data_packet.chipid,
+								mwp->data_word.larpix_word.data_packet.channelid);
+		  raw::ChannelID_t chan = 0;
+		  if (cinfo.valid)
+		    {
+		      chan = cinfo.offlinechan;
+		    }
 
                   int adc = mwp->data_word.larpix_word.data_packet.dataword;  // it's a uint16_t in the message, and a short in rawpixel
                   uint32_t ts = mwp->data_word.larpix_word.data_packet.timestamp;
