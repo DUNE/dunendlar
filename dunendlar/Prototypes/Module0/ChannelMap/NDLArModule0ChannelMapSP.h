@@ -56,7 +56,7 @@ public:
 
   NDLArModule0ChanInfo_t GetChanInfoFromOfflChan(unsigned int offlchan) const;
 
-  unsigned int fNChans;  // compute from the input.   = 77616;    // was:  78400 but there are some missing chips
+  unsigned int fNChans;  // 78400 nominal chans but compute it from input
 
 private:
 

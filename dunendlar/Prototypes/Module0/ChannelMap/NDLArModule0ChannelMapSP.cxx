@@ -250,16 +250,22 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
 
       for (unsigned chip=11; chip<111; ++chip)
         {
-          //auto tinfo = tileioinfo[tile][chip];
-          auto tip = tileioinfo.find(tile);
-          if (tip == tileioinfo.end()) continue;
-          auto& tip2 = tip->second;
-          auto tip3 = tip2.find(chip);
-          if (tip3 == tip2.end()) continue;
-          auto tinfo = tip3->second;
+	  // look up io for this chip on this tile.  Set to zero if not found
 
-          unsigned io_group = tinfo.io_group;
-          unsigned io_channel = tinfo.io_channel;
+	  unsigned io_group = 0;
+	  unsigned io_channel = 0;
+          auto tip = tileioinfo.find(tile);
+          if (tip != tileioinfo.end())
+	    {
+               auto& tip2 = tip->second;
+               auto tip3 = tip2.find(chip);
+               if (tip3 != tip2.end())
+		 {
+                   auto tinfo = tip3->second;
+		   io_group = tinfo.io_group;
+                   io_channel = tinfo.io_channel;
+		 }
+	    }
 
           for (unsigned chipchan=0; chipchan<64; ++chipchan)
             {
