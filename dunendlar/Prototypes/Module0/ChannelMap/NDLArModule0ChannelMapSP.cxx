@@ -301,6 +301,7 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
                   p.xyz[0] = anodex[1];
                 }
               p.valid = true;
+	      if (p.io_group == 0) p.valid = false;
               pinfo.push_back(p);
             }
         }
