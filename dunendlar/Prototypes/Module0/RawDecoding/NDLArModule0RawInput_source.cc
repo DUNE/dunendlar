@@ -176,6 +176,9 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 		    {
 		      chan = cinfo.offlinechan;
 		    }
+		  std::cout << "Channel map check: " << (int) fIogBuff.at(fCurMessage).iog << " " <<
+		    (int) mwp->data_word.channel_id << " " << mwp->data_word.larpix_word.data_packet.chipid << " " 
+		     << mwp->data_word.larpix_word.data_packet.channelid << " " << chan << std::endl;
 
                   int adc = mwp->data_word.larpix_word.data_packet.dataword;  // it's a uint16_t in the message, and a short in rawpixel
                   uint32_t ts = mwp->data_word.larpix_word.data_packet.timestamp;

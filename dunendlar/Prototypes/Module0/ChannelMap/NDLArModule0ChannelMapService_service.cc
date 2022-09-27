@@ -17,10 +17,10 @@
 
 dune::NDLArModule0ChannelMapService::NDLArModule0ChannelMapService(fhicl::ParameterSet const& pset) {
 
-  std::string channelMapFile = pset.get<std::string>("ChannelMapFile");
+  std::string channelMapFile = pset.get<std::string>("ChannelMapFile","module0_pixel_layout_2.2.16.dat");
   std::vector<double> dv;
-  dv.push_back(-0.5);
-  dv.push_back(0.5);
+  dv.push_back(-50.0); // in cm
+  dv.push_back(50.0);
   fAnodeXLoc = pset.get<std::vector<double>>("AnodeXLoc",dv);  // X location of anode planes in cm, indexed by io_group-1
   dv[0] = 0;
   dv[1] = 0;

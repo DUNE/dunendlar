@@ -1,3 +1,5 @@
+#include "NDLArModule0ChannelMapService.fcl"
+
 process_name: testmodule0reader
 
 source: {
@@ -17,3 +19,5 @@ physics: {
   output : [ rootout ]
   end_paths : [ output ]
 }
+
+services.NDLArModule0ChannelMapService: @local::ndlarmodule0channelmap
