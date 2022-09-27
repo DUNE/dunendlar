@@ -166,19 +166,22 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
                                 << std::endl;
                     }
 
-		  auto cinfo = cmap->GetChanInfoFromElectronics(
-		                                                fIogBuff.at(fCurMessage).iog,
-								mwp->data_word.channel_id,
-								mwp->data_word.larpix_word.data_packet.chipid,
-								mwp->data_word.larpix_word.data_packet.channelid);
-		  raw::ChannelID_t chan = 0;
-		  if (cinfo.valid)
-		    {
-		      chan = cinfo.offlinechan;
-		    }
-		  std::cout << "Channel map check: " << (int) fIogBuff.at(fCurMessage).iog << " " <<
-		    (int) mwp->data_word.channel_id << " " << mwp->data_word.larpix_word.data_packet.chipid << " " 
-		     << mwp->data_word.larpix_word.data_packet.channelid << " " << chan << std::endl;
+                  auto cinfo = cmap->GetChanInfoFromElectronics(
+                                                                fIogBuff.at(fCurMessage).iog,
+                                                                mwp->data_word.channel_id,
+                                                                mwp->data_word.larpix_word.data_packet.chipid,
+                                                                mwp->data_word.larpix_word.data_packet.channelid);
+                  raw::ChannelID_t chan = 0;
+                  if (cinfo.valid)
+                    {
+                      chan = cinfo.offlinechan;
+                    }
+                  if (fLogLevel > 1)
+                    {
+                      std::cout << "Channel map check: " << (int) fIogBuff.at(fCurMessage).iog << " " <<
+                        (int) mwp->data_word.channel_id << " " << mwp->data_word.larpix_word.data_packet.chipid << " " 
+                                << mwp->data_word.larpix_word.data_packet.channelid << " " << chan << std::endl;
+                    }
 
                   int adc = mwp->data_word.larpix_word.data_packet.dataword;  // it's a uint16_t in the message, and a short in rawpixel
                   uint32_t ts = mwp->data_word.larpix_word.data_packet.timestamp;
@@ -189,29 +192,29 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
                 {
                   fCurTrigBits =  mwp->word._null[0];
                   fCurTrigTS = (mwp->word._null[6] << 24) + (mwp->word._null[5] << 16) + (mwp->word._null[4] << 8) + mwp->word._null[3];
-		  fCurIO_Group = fIogBuff.at(fCurMessage).iog;
+                  fCurIO_Group = fIogBuff.at(fCurMessage).iog;
 
                   if (fLogLevel > 0)
                     {
                       std::cout << "NDLArModule0Source: Found a trigger: " << fCurTrigTS << " Trigger bits: " << (int) fCurTrigBits << std::endl;
                     }
 
-		  // If we see multiple trigger words, write them all to the output stream.  If there is pixel data between trigger words,
-		  // then start a new event.
+                  // If we see multiple trigger words, write them all to the output stream.  If there is pixel data between trigger words,
+                  // then start a new event.
 
-		  if (fCurTrigTS < fLastTrigTS + fConfigNTickTrigger && fCurTrigTS >= fLastTrigTS)
-		    {
-		      oTriggers->emplace_back(fCurIO_Group, fCurTrigBits, fCurTrigTS);
-		    }
+                  if (fCurTrigTS < fLastTrigTS + fConfigNTickTrigger && fCurTrigTS >= fLastTrigTS)
+                    {
+                      oTriggers->emplace_back(fCurIO_Group, fCurTrigBits, fCurTrigTS);
+                    }
                 }
                   
               // determine whether to finish up the event.  
-	      // Finish the event if the new trigger is at least fConfigNTickTrigger from the one that starts
-	      // the event or if the timestamp counter reset
+              // Finish the event if the new trigger is at least fConfigNTickTrigger from the one that starts
+              // the event or if the timestamp counter reset
 
               if ( (mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::TRIG_WORD
-		    && (fCurTrigTS >= fLastTrigTS + fConfigNTickTrigger || fCurTrigTS < fLastTrigTS ))
-		    || fCurMessage + 1 >= fNMessages)
+                    && (fCurTrigTS >= fLastTrigTS + fConfigNTickTrigger || fCurTrigTS < fLastTrigTS ))
+                   || fCurMessage + 1 >= fNMessages)
                 {
                   // this format of the timestamp is almost certainly the wrong thing to do for now.
 

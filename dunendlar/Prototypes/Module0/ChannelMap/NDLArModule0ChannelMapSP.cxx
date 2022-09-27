@@ -370,7 +370,7 @@ dune::NDLArModule0ChannelMapSP::GetChanInfoFromElectronics(
   if (fm3 == m2.end()) return badInfo;
   auto &m3 = fm3->second;
 
-  auto fm4 = m3.find(chip);
+  auto fm4 = m3.find(chipchannel);
   if (fm4 == m3.end()) return badInfo;
   auto chaninfo = fm4->second;
 
