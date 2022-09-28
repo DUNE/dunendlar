@@ -19,8 +19,8 @@ dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
   fConfigRunNumber = ps.get<size_t>("RunNumber",1);  
   fCurRun = fConfigRunNumber;
   fConfigSubRunNumber = ps.get<size_t>("SubRunNumber",1);
-  fConfigNTickTrigger = ps.get<size_t>("NTickTrigger",2000000);  // number of timestamp ticks to go 
-                                                                 // before starting a new event, even if new 
+  fConfigNTickTrigger = ps.get<size_t>("NTickTrigger",500000);  // number of timestamp ticks to go 
+                                                                // before starting a new event, even if new 
                                                                  // trigger words come in
   rh.reconstitutes<std::vector<raw::RawPixel>, art::InEvent>(pretend_module_name);
   rh.reconstitutes<std::vector<raw::Module0Trigger>, art::InEvent>(pretend_module_name);

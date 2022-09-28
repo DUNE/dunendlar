@@ -1,0 +1,32 @@
+#include "NDLArModule0ChannelMapService.fcl"
+#include "NDLArModule0SpacePointMaker.fcl"
+
+process_name: testmodule0readerreco
+
+source: {
+  module_type: NDLArModule0RawInput
+}
+
+outputs: {
+  rootout: {
+    module_type: RootOutput
+    fileName: "tmpmodule0.root"
+    dataTier:    "full-reconstructed"
+    compressionLevel: 1
+  }
+}
+
+physics: {
+  producers:
+   {
+     ndlarm0spacepoint : @local::NDLArModule0SpacePointMaker_params
+   }
+
+  produce: [ ndlarm0spacepoint ]
+  trigger_paths : [ produce ]
+  output : [ rootout ]
+  end_paths : [ output ]
+}
+
+services.NDLArModule0ChannelMapService: @local::ndlarmodule0channelmap
+

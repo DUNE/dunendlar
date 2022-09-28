@@ -1,0 +1,10 @@
+BEGIN_PROLOG
+
+NDLArModule0SpacePointMaker_params: 
+{
+  module_type: "NDLArModule0SpacePointMaker"
+  RawPixelLabel: "daq"
+  DriftVel: 0.027
+}
+
+END_PROLOG

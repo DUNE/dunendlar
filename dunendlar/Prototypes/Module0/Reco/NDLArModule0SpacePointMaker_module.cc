@@ -55,7 +55,7 @@ NDLArModule0SpacePointMaker::NDLArModule0SpacePointMaker(fhicl::ParameterSet con
   // More initializers here.
 {
   fRawPixelLabel = p.get<std::string>("RawPixelLabel","daq");
-  fDriftVel = p.get<double>("DriftVel",0.000025);  // cm per tick
+  fDriftVel = p.get<double>("DriftVel",0.027);  // cm per tick
   consumes<std::vector<raw::RawPixel>>(fRawPixelLabel);
   consumes<std::vector<raw::Module0Trigger>>(fRawPixelLabel);
   produces<std::vector<recob::SpacePoint>>();
