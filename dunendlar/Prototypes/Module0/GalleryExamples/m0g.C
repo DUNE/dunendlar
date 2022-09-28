@@ -31,11 +31,18 @@ void
 m0g(size_t ievcount=0, std::string const& filename="tmpmodule0.root",  std::string spacepointtagstring="ndlarm0spacepoint")
 {
 
+  bool frotate=false;
+  bool fprint=false;
+
   size_t evcounter=0;
 
   InputTag recobspacepoint_tag{ spacepointtagstring };
   // Create a vector of length 1, containing the given filename.
   vector<string> filenames(1, filename);
+
+  TString outname="event";
+  outname += ievcount;
+  outname += ".gif+";
 
   for (gallery::Event ev(filenames); !ev.atEnd(); ev.next()) {
     if (evcounter == ievcount)
@@ -60,8 +67,8 @@ m0g(size_t ievcount=0, std::string const& filename="tmpmodule0.root",  std::stri
 	      }
 
 	    TGraph2D *grlimit = new TGraph2D();
-	    grlimit->SetPoint(0,-100,-100,-60);
-	    grlimit->SetPoint(1,100,100,60);
+	    grlimit->SetPoint(0,-50,-50,-60);
+	    grlimit->SetPoint(1,50,50,60);
 	    grlimit->SetMarkerColor(0);
 	    grlimit->SetMarkerStyle(1);
 	    grlimit->Draw("P");
@@ -79,8 +86,27 @@ m0g(size_t ievcount=0, std::string const& filename="tmpmodule0.root",  std::stri
 	    grlimit->GetYaxis()->SetTitleColor(4);
 	    grlimit->GetZaxis()->SetTitle("Y (cm)");
 	    grlimit->GetZaxis()->SetTitleColor(4);
-
       	    c->Update();
+
+	    if (frotate)
+	      {
+		for (size_t iframe=0; iframe<100; ++iframe)
+		  {
+		    c->SetTheta(10.0 + 0.1*iframe);
+		    c->SetPhi(60.0 + 1.0*iframe);
+      	            c->Update();
+		    if (fprint)
+		      {
+			c->Print(outname);
+		      }
+		  }
+		if (fprint)
+		  {
+		    TString outnamepp = outname;
+		    outnamepp += "+";
+		    c->Print(outnamepp);
+		  }
+	      }
 	  }
       }
     ++evcounter;
