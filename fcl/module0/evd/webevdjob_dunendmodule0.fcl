@@ -12,6 +12,7 @@ source:
 services:
 {
   @table::dunendmodule0_services
+  GeometryConfigurationWriter: {}
   InputSeeker: {}
 }
 
