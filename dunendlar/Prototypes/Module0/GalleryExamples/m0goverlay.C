@@ -73,8 +73,8 @@ m0goverlay(size_t ievcount=0, std::string const& filename="tmpmodule0.root",  st
     ++evcounter;
   }
   TGraph2D *grlimit = new TGraph2D();
-  grlimit->SetPoint(0,-50,-50,-60);
-  grlimit->SetPoint(1,50,50,60);
+  grlimit->SetPoint(0,-50,-16,-60);
+  grlimit->SetPoint(1,50,16,60);
   grlimit->SetMarkerColor(0);
   grlimit->SetMarkerStyle(1);
   grlimit->Draw("P");

@@ -4,7 +4,7 @@ BEGIN_PROLOG
 
 ndlarmodule0channelmap: {
   ChannelMapFile:         "module0_pixel_layout_2.2.16.dat"    # de-yaml'd pixel layout description
-  AnodeXLoc: [ -50.0, 50.0 ]
+  AnodeXLoc: [ -15.52, 15.52 ]
   AnodeYOffset: [ 0.0, 0.0 ]
   AnodeZOffset: [ 0.0, 0.0 ]
 }
