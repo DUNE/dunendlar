@@ -4,7 +4,7 @@ NDLArModule0SpacePointMaker_params:
 {
   module_type: "NDLArModule0SpacePointMaker"
   RawPixelLabel: "daq"
-  DriftVel: 0.0081     # in cm per tick  1 tick = 0.1 microsecond
+  DriftVel: 0.016     # in cm per tick  1 tick = 0.1 microsecond
 }
 
 END_PROLOG

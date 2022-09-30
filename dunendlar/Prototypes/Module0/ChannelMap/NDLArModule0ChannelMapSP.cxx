@@ -179,13 +179,6 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
       //std::cout << "tileo: " << tile << " " << t.v0 << " " << t.v1 << " " << t.v2 << std::endl;
     }
 
-  // positions are doubles. change to cm for larsoft.  One struct per tile
-  // in the yaml file, the drift is along z, and y is up.  in LArSoft,
-  // the drift is along x, y is up, and z is along the beam (or close to it)
-  // v2 is along drift, v1 is up.
-
-  std::vector<double> anodexloc(2);  // these are added later in larsoft x.  Just there to get the min and max v2
-
   typedef struct tileposition_struct
   {
     double v0;
@@ -209,9 +202,6 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
       t.v1 /= 10.0;
       t.v2 /= 10.0;
       tileposition[tile] = t;
-
-      if (i == 0 || t.v2 < anodexloc[0]) anodexloc[0] = t.v2;
-      if (i == 0 || t.v2 > anodexloc[1]) anodexloc[1] = t.v2;
     }
 
   typedef struct tpccenter_struct
@@ -299,7 +289,7 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
 	      if (io_group == 2) ioffsetindex = 1;
               p.xyz[2] = x + anodezoffset.at(ioffsetindex);    // switch to larsoft axes
               p.xyz[1] = y + anodeyoffset.at(ioffsetindex);
-	      p.xyz[0] = anodexloc.at(ioffsetindex) + tpccenter[tileindex[tile].i1].v2 + anodexoffset.at(ioffsetindex);
+	      p.xyz[0] = tileposition[tile].v0 + tpccenter[tileindex[tile].i1].v2 + anodexoffset.at(ioffsetindex);
 	      //std::cout << "tile: " << tile << " x: " << p.xyz[0] << " " << io_group << std::endl;
               p.valid = true;
 	      if (p.io_group == 0) p.valid = false;
