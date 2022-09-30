@@ -22,9 +22,9 @@ dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
   fConfigNTickTrigger = ps.get<size_t>("NTickTrigger",2000);  // number of timestamp ticks to go 
                                                                 // before starting a new event, even if new 
   // trigger words come in
-  fConfigMaxMessageLookBack = ps.get<size_t>("MaxMessageLookBack",100);  // look 100 messages before the current trigger for
+  fConfigMaxMessageLookBack = ps.get<size_t>("MaxMessageLookBack",600);  // look 600 messages before the current trigger for
   // data that may be in the timestamp window.  Also use this to look after the last message to contribute in the 
-  // window for possibly more out-of sequence data
+  // window for possibly more out-of sequence data.  Cover the 512-word bug
 
   rh.reconstitutes<std::vector<raw::RawPixel>, art::InEvent>(pretend_module_name);
   rh.reconstitutes<std::vector<raw::Module0Trigger>, art::InEvent>(pretend_module_name);
