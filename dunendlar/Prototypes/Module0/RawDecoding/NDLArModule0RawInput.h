@@ -16,7 +16,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "dunecore/HDF5Utils/HDF5Utils.h"
-
+#include "TH1F.h"
 
 namespace dune {
 //Forward declare the class
@@ -82,5 +82,8 @@ class dune::NDLArModule0RawInputDetail {
   hid_t fVlt;
   hid_t fRDataspaceid;
 
+  TH1F *fHist_tts;
+  TH1F *fHist_dts;
+  TH1F *fHist_deltats;
  };
 #endif

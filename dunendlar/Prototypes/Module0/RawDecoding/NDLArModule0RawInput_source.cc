@@ -2,6 +2,7 @@
 #include "art/Framework/Core/InputSourceMacros.h"
 #include "art/Framework/IO/Sources/Source.h"
 #include "art/Framework/IO/Sources/SourceTraits.h"
+#include "art_root_io/TFileService.h"
 #include "NDLArModule0RawInput.h"
 #include "dunecore/DuneObj/DUNEHDF5FileInfo.h"
 #include "dunendlar/DUNENDLArObj/RawPixel.h"
@@ -28,6 +29,11 @@ dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
 
   rh.reconstitutes<std::vector<raw::RawPixel>, art::InEvent>(pretend_module_name);
   rh.reconstitutes<std::vector<raw::Module0Trigger>, art::InEvent>(pretend_module_name);
+
+  art::ServiceHandle<art::TFileService> tfs;
+  fHist_tts = tfs->make<TH1F>("tts","Trigger Timestamps",200,0,2E7);
+  fHist_dts = tfs->make<TH1F>("dts","LArPix Data Timestamps",200,0,2E7);
+  fHist_deltats = tfs->make<TH1F>("deltats","LArPix - Trigger Timestamps",200,-2000.0,4000.0);
 }
 
 void dune::NDLArModule0RawInputDetail::readFile(
@@ -220,6 +226,7 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 		  uint32_t TrigBits =  mwp->word._null[0];
 		  uint32_t TrigTS = (mwp->word._null[6] << 24) + (mwp->word._null[5] << 16) + (mwp->word._null[4] << 8) + mwp->word._null[3];
 		  uint8_t  IO_Group = fIogBuff.at(iMessage).iog;
+		  fHist_tts->Fill(TrigTS);
 		  if (TrigTS == 0 || TrigTS > 10200000) continue; // discard buggy timestamps
 
 		  if (fLogLevel > 1)
@@ -252,7 +259,11 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 		    }
 
 		  uint32_t dataTS = mwp->data_word.larpix_word.data_packet.timestamp;
+		  fHist_dts->Fill(dataTS);
 		  if (dataTS == 0 || dataTS > 10200000) continue;
+
+		  double deltaTS = (double) dataTS - (double) fCurTrigTS;
+		  fHist_deltats->Fill(deltaTS);
 
 		  if (dataTS >= fCurTrigTS && dataTS < fCurTrigTS + fConfigNTickTrigger)
 		    {

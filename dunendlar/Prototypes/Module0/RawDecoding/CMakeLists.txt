@@ -7,12 +7,14 @@ simple_plugin(NDLArModule0RawInput "source"
          art::Framework_Core
          art::Framework_Principal
          art::Framework_Services_Registry
+	 art_root_io::TFileService_service
 	 dunecore::HDF5Utils
 	 dunendlar::Prototypes_Module0_ChannelMap_NDLArModule0ChannelMapService_service
          LIBHDF5 
          pthread
          z
-  art::Framework_Services_Registry
+         art::Framework_Services_Registry
+	 ROOT::Hist
 )
 
 install_headers()

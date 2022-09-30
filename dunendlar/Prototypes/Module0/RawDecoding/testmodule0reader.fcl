@@ -21,3 +21,4 @@ physics: {
 }
 
 services.NDLArModule0ChannelMapService: @local::ndlarmodule0channelmap
+services.TFileService.fileName: "tmpmodule0_hist.root"
