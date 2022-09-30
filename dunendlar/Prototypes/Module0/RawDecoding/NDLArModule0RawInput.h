@@ -60,15 +60,14 @@ class dune::NDLArModule0RawInputDetail {
   size_t fConfigRunNumber;
   size_t fConfigSubRunNumber;
   size_t fConfigNTickTrigger;
+  size_t fConfigMaxMessageLookBack;
+
   size_t fNMessages;
   size_t fCurEvent;  // triggers are not divided up in the file, so we keep track here.
   size_t fCurRun;  // triggers are not divided up in the file, so we keep track here.
   size_t fCurMessage;
   uint32_t fCurTrigTS;
-  uint32_t fLastTrigTS;
-  uint8_t fLastTrigBits;
   uint8_t fCurTrigBits;
-  uint8_t fLastIO_Group;
   uint8_t fCurIO_Group;
 
   // buffer for i/o groups

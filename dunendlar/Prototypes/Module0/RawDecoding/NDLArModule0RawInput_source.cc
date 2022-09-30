@@ -19,9 +19,13 @@ dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
   fConfigRunNumber = ps.get<size_t>("RunNumber",1);  
   fCurRun = fConfigRunNumber;
   fConfigSubRunNumber = ps.get<size_t>("SubRunNumber",1);
-  fConfigNTickTrigger = ps.get<size_t>("NTickTrigger",500000);  // number of timestamp ticks to go 
+  fConfigNTickTrigger = ps.get<size_t>("NTickTrigger",2000);  // number of timestamp ticks to go 
                                                                 // before starting a new event, even if new 
-                                                                 // trigger words come in
+  // trigger words come in
+  fConfigMaxMessageLookBack = ps.get<size_t>("MaxMessageLookBack",100);  // look 100 messages before the current trigger for
+  // data that may be in the timestamp window.  Also use this to look after the last message to contribute in the 
+  // window for possibly more out-of sequence data
+
   rh.reconstitutes<std::vector<raw::RawPixel>, art::InEvent>(pretend_module_name);
   rh.reconstitutes<std::vector<raw::Module0Trigger>, art::InEvent>(pretend_module_name);
 }
@@ -33,7 +37,6 @@ void dune::NDLArModule0RawInputDetail::readFile(
   fCurEvent = 0;
   fCurMessage = 0;
   fCurTrigTS = 0;
-  fLastTrigTS = 0;
 
   // read all the io_groups into memory.  Only reason to do this is because we need to read all the
   // messages into memory at the same time too.  The i/o groups take less space.
@@ -110,13 +113,6 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
   outSR = 0;
   outE = 0;
 
-  // this also covers the case where fNMessages is zero. 
-
-  if (fCurMessage >= fNMessages) 
-    {
-      return false;
-    }
-
   size_t run_id = fCurRun;
 
   //Where to get event number?  Event number just starts counting at 1 for each input file,
@@ -131,136 +127,190 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
   std::unique_ptr<std::vector<raw::RawPixel>> oPixels( new std::vector<raw::RawPixel> );
   std::unique_ptr<std::vector<raw::Module0Trigger>> oTriggers( new std::vector<raw::Module0Trigger> );
 
-  oTriggers->emplace_back(fLastIO_Group, fLastTrigBits, fLastTrigTS);
+  // assume the current message is left over from the previous event and is the message number of its trigger
+  // starting from the current message, find the first trigger word that is at least fConfigNTickTrigger from the last trigger time
 
-  while (true)
+  size_t foundtrigmessage = 0;
+  uint32_t ltsc = 0;
+  if (fCurTrigTS >= fConfigNTickTrigger)
     {
-      void *messageptr = fRData[fCurMessage].p;
+      ltsc = fCurTrigTS - fConfigNTickTrigger;
+    }
+  for (size_t iMessage = fCurMessage + 1; iMessage < fNMessages; ++iMessage)
+    {
+      void *messageptr = fRData[iMessage].p;
       dunedaq::detdataformats::pacman::PACMANFrame::PACMANMessageHeader *hdr = pmf.get_msg_header(messageptr);
-      
       dunedaq::detdataformats::pacman::PACMANFrame::msg_type mtype = hdr->type;
       if (fLogLevel > 1)
         {
-          std::cout << "PACMAN message[" << fCurMessage << "] nwords: " << hdr->words << " message type: " << mtype << std::endl;
+          std::cout << "PACMAN message[" << iMessage << "] nwords: " << hdr->words << " message type: " << mtype << std::endl;
         }
+
       if (mtype == dunedaq::detdataformats::pacman::PACMANFrame::msg_type::DATA_MSG)
         {
           //std::cout << "unpacking data words" << std::endl;
           for (size_t iword = 0; iword < hdr->words; ++iword)
             {
               dunedaq::detdataformats::pacman::PACMANFrame::PACMANMessageWord* mwp = pmf.get_msg_word(messageptr,iword);
-
-              if (mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::DATA_WORD)
-                {
-                  if (fLogLevel > 1)
-                    {
-                      std::cout << "word[" << iword << "] type: " 
-                                << mwp->data_word.type 
-                                << " uart chan: " << (int) mwp->data_word.channel_id 
-                                << " chipid: " << mwp->data_word.larpix_word.data_packet.chipid 
-                                << " channelid: " << mwp->data_word.larpix_word.data_packet.channelid 
-                                << " adc: " << mwp->data_word.larpix_word.data_packet.dataword 
-                                << " timestamp: " << mwp->data_word.larpix_word.data_packet.timestamp 
-                                << " trigger_type: " << mwp->data_word.larpix_word.data_packet.trigger_type 
-                                << " io_group: " << (int) fIogBuff.at(fCurMessage).iog
-                                << std::endl;
-                    }
-
-                  auto cinfo = cmap->GetChanInfoFromElectronics(
-                                                                fIogBuff.at(fCurMessage).iog,
-                                                                mwp->data_word.channel_id,
-                                                                mwp->data_word.larpix_word.data_packet.chipid,
-                                                                mwp->data_word.larpix_word.data_packet.channelid);
-                  raw::ChannelID_t chan = 0;
-                  if (cinfo.valid)
-                    {
-                      chan = cinfo.offlinechan;
-                    }
-                  if (fLogLevel > 1)
-                    {
-                      std::cout << "Channel map check: " << (int) fIogBuff.at(fCurMessage).iog << " " <<
-                        (int) mwp->data_word.channel_id << " " << mwp->data_word.larpix_word.data_packet.chipid << " " 
-                                << mwp->data_word.larpix_word.data_packet.channelid << " " << chan << std::endl;
-                    }
-
-                  int adc = mwp->data_word.larpix_word.data_packet.dataword;  // it's a uint16_t in the message, and a short in rawpixel
-                  uint32_t ts = mwp->data_word.larpix_word.data_packet.timestamp;
-                  oPixels->emplace_back(chan, adc, ts );
-                }
-
               if ( mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::TRIG_WORD )
                 {
-                  fCurTrigBits =  mwp->word._null[0];
-                  fCurTrigTS = (mwp->word._null[6] << 24) + (mwp->word._null[5] << 16) + (mwp->word._null[4] << 8) + mwp->word._null[3];
-                  fCurIO_Group = fIogBuff.at(fCurMessage).iog;
+                  uint32_t TrigBits =  mwp->word._null[0];
+                  uint32_t TrigTS = (mwp->word._null[6] << 24) + (mwp->word._null[5] << 16) + (mwp->word._null[4] << 8) + mwp->word._null[3];
+		  if (TrigTS == 0 || TrigTS > 10200000) continue; // discard buggy timestamps
+                  uint8_t  IO_Group = fIogBuff.at(iMessage).iog;
 
-                  if (fLogLevel > 0)
-                    {
-                      std::cout << "NDLArModule0Source: Found a trigger: " << fCurTrigTS << " Trigger bits: " << (int) fCurTrigBits << std::endl;
-                    }
+		  // start a new event if:  the new trigger is long enough after the previous one,
+		  // or if the clock has rolled around, or if we haven't seen a trigger yet
 
-                  // If we see multiple trigger words, write them all to the output stream.  If there is pixel data between trigger words,
-                  // then start a new event.
-
-                  if (fCurTrigTS < fLastTrigTS + fConfigNTickTrigger && fCurTrigTS >= fLastTrigTS)
-                    {
-                      oTriggers->emplace_back(fCurIO_Group, fCurTrigBits, fCurTrigTS);
-                    }
+		  if (TrigTS > fCurTrigTS + fConfigNTickTrigger || TrigTS < ltsc || fCurTrigTS == 0)
+		    {
+		      foundtrigmessage = iMessage;
+		      fCurTrigTS = TrigTS;
+                      if (fLogLevel > 0)
+                        {
+                          std::cout << "NDLArModule0Source: Found an event trigger: " << TrigTS << " Trig Bits: " << TrigBits << " IO_Group: " << (int) IO_Group << " " << iMessage << " " << fCurMessage << std::endl;
+                        }
+		      break;
+		    }
                 }
-                  
-              // determine whether to finish up the event.  
-              // Finish the event if the new trigger is at least fConfigNTickTrigger from the one that starts
-              // the event or if the timestamp counter reset
-
-              if ( (mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::TRIG_WORD
-                    && (fCurTrigTS >= fLastTrigTS + fConfigNTickTrigger || fCurTrigTS < fLastTrigTS ))
-                   || fCurMessage + 1 >= fNMessages)
-                {
-                  // this format of the timestamp is almost certainly the wrong thing to do for now.
-
-                  uint64_t getTrigTime = formatTrigTimeStamp (fLastTrigTS);
-                  if (fLogLevel > 0)
-                    {
-                      std::cout << "NDLArModule0Source: getTrigTime :" << getTrigTime << std::endl;
-                    }
-
-                  art::Timestamp artTrigStamp (getTrigTime);
-                  if (fLogLevel > 0)
-                    {
-                      std::cout << "artTrigStamp :" << artTrigStamp.value() << std::endl;
-                    }
-
-                  // make new run if inR is 0 or if the run has changed
-                  if (inR == 0 || inR->run() != run_id) {
-                    outR = pmaker.makeRunPrincipal(run_id,artTrigStamp);
-                  }
-
-                  // make new subrun if inSR is 0 or if the subrun has changed
-                  art::SubRunID subrun_check(run_id, 1);
-                  if (inSR == 0 || subrun_check != inSR->subRunID()) {
-                    outSR = pmaker.makeSubRunPrincipal(run_id, 1, artTrigStamp);
-                  }
-                  outE = pmaker.makeEventPrincipal(run_id, 1, fCurEvent, artTrigStamp);
-
-                  put_product_in_principal(std::move(oPixels), *outE, pretend_module_name,"");
-                  put_product_in_principal(std::move(oTriggers), *outE, pretend_module_name,"");
-
-                  fLastTrigTS = fCurTrigTS;
-                  fLastTrigBits = fCurTrigBits;
-                  fLastIO_Group = fCurIO_Group;
-                  fCurMessage++;
-
-                  return true;
-                }
-
-              // get the trigger timestamp if we are reading a trigger word.
-
-              // to do -- do we subtract the trigger time from the data timestamp?  What about data in the file that
-              // come before the first trigger data word?
-            }
-        }
-      fCurMessage++;
+	      if (foundtrigmessage) break;
+	    }
+	}
+      if (foundtrigmessage) break;
     }
+
+  if (!foundtrigmessage)  // didn't find any more triggers 
+    {
+      return false;
+    }
+  fCurMessage = foundtrigmessage;
+
+  size_t lowmessage = 0;
+  if (fConfigMaxMessageLookBack <= foundtrigmessage)
+    {
+      lowmessage = foundtrigmessage - fConfigMaxMessageLookBack; 
+    }
+
+  // loop through range of messages and put everything in the event that is between fCurTrigTS and fCurTrigTS + fConfigNTickTrigger
+  // discard zero timestamps and timestamps > 1.02E7
+
+  size_t lastmessageinevent = foundtrigmessage;
+
+  for (size_t iMessage = lowmessage; iMessage < fNMessages; ++iMessage)
+    {
+      //std::cout << "check if done: " << iMessage << " " << lastmessageinevent << " " << fConfigMaxMessageLookBack << std::endl;
+      if (iMessage > lastmessageinevent + fConfigMaxMessageLookBack) break;   // look past the last message in the event for some more out-of-order words
+
+      void *messageptr = fRData[iMessage].p;
+      dunedaq::detdataformats::pacman::PACMANFrame::PACMANMessageHeader *hdr = pmf.get_msg_header(messageptr);
+      
+      dunedaq::detdataformats::pacman::PACMANFrame::msg_type mtype = hdr->type;
+      if (fLogLevel > 1)
+	{
+	  std::cout << "PACMAN message[" << iMessage << "] nwords: " << hdr->words << " message type: " << mtype << std::endl;
+	}
+
+      if (mtype == dunedaq::detdataformats::pacman::PACMANFrame::msg_type::DATA_MSG)
+	{
+	  for (size_t iword = 0; iword < hdr->words; ++iword)
+	    {
+	      dunedaq::detdataformats::pacman::PACMANFrame::PACMANMessageWord* mwp = pmf.get_msg_word(messageptr,iword);
+	      if ( mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::TRIG_WORD )
+		{
+		  uint32_t TrigBits =  mwp->word._null[0];
+		  uint32_t TrigTS = (mwp->word._null[6] << 24) + (mwp->word._null[5] << 16) + (mwp->word._null[4] << 8) + mwp->word._null[3];
+		  uint8_t  IO_Group = fIogBuff.at(iMessage).iog;
+		  if (TrigTS == 0 || TrigTS > 10200000) continue; // discard buggy timestamps
+
+		  if (fLogLevel > 1)
+		    {
+		      std::cout << "NDLArModule0Source: Found a trigger: " << TrigTS << " Trigger bits: " << (int) TrigBits << " IO_Group: " << (int) IO_Group << std::endl;
+		    }
+
+		  if (TrigTS >= fCurTrigTS && TrigTS < fCurTrigTS + fConfigNTickTrigger)
+		    {
+		      oTriggers->emplace_back(IO_Group, TrigBits, TrigTS);
+		      lastmessageinevent = iMessage;
+		    }
+		}
+
+
+	      if (mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::DATA_WORD)
+		{
+		  if (fLogLevel > 1)
+		    {
+		      std::cout << "word[" << iword << "] type: " 
+				<< mwp->data_word.type 
+				<< " uart chan: " << (int) mwp->data_word.channel_id 
+				<< " chipid: " << mwp->data_word.larpix_word.data_packet.chipid 
+				<< " channelid: " << mwp->data_word.larpix_word.data_packet.channelid 
+				<< " adc: " << mwp->data_word.larpix_word.data_packet.dataword 
+				<< " timestamp: " << mwp->data_word.larpix_word.data_packet.timestamp 
+				<< " trigger_type: " << mwp->data_word.larpix_word.data_packet.trigger_type 
+				<< " io_group: " << (int) fIogBuff.at(iMessage).iog
+				<< std::endl;
+		    }
+
+		  uint32_t dataTS = mwp->data_word.larpix_word.data_packet.timestamp;
+		  if (dataTS == 0 || dataTS > 10200000) continue;
+
+		  if (dataTS >= fCurTrigTS && dataTS < fCurTrigTS + fConfigNTickTrigger)
+		    {
+		      lastmessageinevent = iMessage;
+		      auto cinfo = cmap->GetChanInfoFromElectronics(
+								    fIogBuff.at(iMessage).iog,
+								    mwp->data_word.channel_id,
+								    mwp->data_word.larpix_word.data_packet.chipid,
+								    mwp->data_word.larpix_word.data_packet.channelid);
+		      raw::ChannelID_t chan = 0;
+		      if (cinfo.valid)
+			{
+			  chan = cinfo.offlinechan;
+			}
+		      if (fLogLevel > 1)
+			{
+			  std::cout << "Channel map check: " << (int) fIogBuff.at(iMessage).iog << " " <<
+			    (int) mwp->data_word.channel_id << " " << mwp->data_word.larpix_word.data_packet.chipid << " " 
+				    << mwp->data_word.larpix_word.data_packet.channelid << " " << chan << std::endl;
+			}
+
+		      int adc = mwp->data_word.larpix_word.data_packet.dataword;  // it's a uint16_t in the message, and a short in rawpixel
+		      uint32_t ts = mwp->data_word.larpix_word.data_packet.timestamp;
+		      oPixels->emplace_back(chan, adc, ts );
+		    }
+		}
+	    }    
+	}
+    }      
+
+  uint64_t getTrigTime = formatTrigTimeStamp (fCurTrigTS);
+  if (fLogLevel > 0)
+    {
+      std::cout << "NDLArModule0Source: getTrigTime :" << getTrigTime << std::endl;
+    }
+
+  art::Timestamp artTrigStamp (getTrigTime);
+  if (fLogLevel > 0)
+    {
+      std::cout << "artTrigStamp :" << artTrigStamp.value() << std::endl;
+    }
+
+  // make new run if inR is 0 or if the run has changed
+  if (inR == 0 || inR->run() != run_id) {
+    outR = pmaker.makeRunPrincipal(run_id,artTrigStamp);
+  }
+
+  // make new subrun if inSR is 0 or if the subrun has changed
+  art::SubRunID subrun_check(run_id, 1);
+  if (inSR == 0 || subrun_check != inSR->subRunID()) {
+    outSR = pmaker.makeSubRunPrincipal(run_id, 1, artTrigStamp);
+  }
+  outE = pmaker.makeEventPrincipal(run_id, 1, fCurEvent, artTrigStamp);
+
+  put_product_in_principal(std::move(oPixels), *outE, pretend_module_name,"");
+  put_product_in_principal(std::move(oTriggers), *outE, pretend_module_name,"");
+
+  return true;
 }
 
 //typedef for shorthand
