@@ -43,7 +43,7 @@ public:
   // and the other containing a crate and APA name listing.
 
   void ReadMapFromFile(const std::string &chanmapfile, 
-		       std::vector<double> &anodex,
+		       std::vector<double> &anodexoffset,
 		       std::vector<double> &anodeyoffset,
 		       std::vector<double> &anodezoffset);
 

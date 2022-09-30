@@ -24,7 +24,7 @@ dune::NDLArModule0ChannelMapSP::NDLArModule0ChannelMapSP()
 }
 
 void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapfile,
-                                                     std::vector<double> &anodex,
+                                                     std::vector<double> &anodexoffset,
                                                      std::vector<double> &anodeyoffset,
                                                      std::vector<double> &anodezoffset)
 {
@@ -184,6 +184,8 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
   // the drift is along x, y is up, and z is along the beam (or close to it)
   // v2 is along drift, v1 is up.
 
+  std::vector<double> anodexloc(2);  // these are added later in larsoft x.  Just there to get the min and max v2
+
   typedef struct tileposition_struct
   {
     double v0;
@@ -207,6 +209,9 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
       t.v1 /= 10.0;
       t.v2 /= 10.0;
       tileposition[tile] = t;
+
+      if (i == 0 || t.v2 < anodexloc[0]) anodexloc[0] = t.v2;
+      if (i == 0 || t.v2 > anodexloc[1]) anodexloc[1] = t.v2;
     }
 
   typedef struct tpccenter_struct
@@ -290,16 +295,12 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
               p.io_group = io_group;
               p.io_channel = io_channel;
               p.chipchannel = chipchan;
-              p.xyz[2] = x;    // switch to larsoft axes
-              p.xyz[1] = y;
-              if (io_group == 1)
-                {
-                  p.xyz[0] = anodex[0];
-                }
-              else
-                {
-                  p.xyz[0] = anodex[1];
-                }
+	      size_t ioffsetindex = 0;
+	      if (io_group == 2) ioffsetindex = 1;
+              p.xyz[2] = x + anodezoffset.at(ioffsetindex);    // switch to larsoft axes
+              p.xyz[1] = y + anodeyoffset.at(ioffsetindex);
+	      p.xyz[0] = anodexloc.at(ioffsetindex) + tpccenter[tileindex[tile].i1].v2 + anodexoffset.at(ioffsetindex);
+	      //std::cout << "tile: " << tile << " x: " << p.xyz[0] << " " << io_group << std::endl;
               p.valid = true;
 	      if (p.io_group == 0) p.valid = false;
               pinfo.push_back(p);

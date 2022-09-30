@@ -38,7 +38,7 @@ private:
 
   dune::NDLArModule0ChannelMapSP fModule0ChanMap;
 
-  std::vector<double> fAnodeXLoc;
+  std::vector<double> fAnodeXOffset;
   std::vector<double> fAnodeYOffset;
   std::vector<double> fAnodeZOffset;
 

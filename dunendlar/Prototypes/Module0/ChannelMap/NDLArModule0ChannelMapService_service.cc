@@ -19,11 +19,9 @@ dune::NDLArModule0ChannelMapService::NDLArModule0ChannelMapService(fhicl::Parame
 
   std::string channelMapFile = pset.get<std::string>("ChannelMapFile","module0_pixel_layout_2.2.16.dat");
   std::vector<double> dv;
-  dv.push_back(-50.0); // in cm
-  dv.push_back(50.0);
-  fAnodeXLoc = pset.get<std::vector<double>>("AnodeXLoc",dv);  // X location of anode planes in cm, indexed by io_group-1
-  dv[0] = 0;
-  dv[1] = 0;
+  dv.push_back(0.0); // in cm
+  dv.push_back(0.0);
+  fAnodeXOffset = pset.get<std::vector<double>>("AnodeXOffset",dv);  // X location of anode planes in cm, indexed by io_group-1
   fAnodeYOffset = pset.get<std::vector<double>>("AnodeYOffset",dv); // Y offsets of anode planes in cm, indexed by io_group-1
   fAnodeZOffset = pset.get<std::vector<double>>("AnodeZOffset",dv); // Y offsets of anode planes in cm, indexed by io_group-1
 
@@ -37,7 +35,7 @@ dune::NDLArModule0ChannelMapService::NDLArModule0ChannelMapService(fhicl::Parame
   
   MF_LOG_INFO("NDLArModule0ChannelMapService") << "Building NDLArModule0 pixel map from file " << channelMapFile << std::endl;
 
-  fModule0ChanMap.ReadMapFromFile(chanmapfullname, fAnodeXLoc, fAnodeYOffset, fAnodeZOffset);
+  fModule0ChanMap.ReadMapFromFile(chanmapfullname, fAnodeXOffset, fAnodeYOffset, fAnodeZOffset);
 }
 
 dune::NDLArModule0ChannelMapService::NDLArModule0ChannelMapService(fhicl::ParameterSet const& pset, art::ActivityRegistry&) : NDLArModule0ChannelMapService(pset) {
