@@ -1,0 +1,10 @@
+BEGIN_PROLOG
+
+spdump_dunendmodule0:
+{
+    module_type:           "SPDump"
+    SpacePointModuleLabel: "ndlarm0spacepoint"
+    GeometryFileName:      "ndlarm0geo.root"
+}
+
+END_PROLOG

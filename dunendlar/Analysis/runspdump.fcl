@@ -1,0 +1,36 @@
+#include "services_dunendlar.fcl"
+#include "spdumpmodule.fcl"
+
+process_name: SPDump
+
+source:
+{
+  module_type: RootInput
+}
+
+outputs:
+{
+}
+
+
+services:
+{
+  TFileService: { fileName: "spdump.root" }
+  FileCatalogMetadataDUNE:      {}
+  FileCatalogMetadata:          @local::art_file_catalog_mc
+  TFileMetadataDUNE:            @local::dune_tfile_metadata
+  @table::dunendmodule0_services
+  GeometryConfigurationWriter: {}
+}
+
+
+physics:
+{
+  analyzers:
+  {
+    spdump: @local::spdump_dunendmodule0
+  }
+
+  ana:  [ spdump ]
+  end_paths: [ ana ]
+}
