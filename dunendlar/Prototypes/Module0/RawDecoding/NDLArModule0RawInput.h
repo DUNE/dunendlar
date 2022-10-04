@@ -59,7 +59,11 @@ class dune::NDLArModule0RawInputDetail {
 
   size_t fConfigRunNumber;
   size_t fConfigSubRunNumber;
-  size_t fConfigNTickTrigger;
+  size_t fConfigNTickTriggerReadout;  // number of timestmap ticks (0.1 microseconds each) to look for data to include
+  size_t fConfigNTickNextTriggerGap;  // number of timestmap ticks (0.1 microseconds each) after a trigger that
+                                      // the next trigger will be considered part of the first one and not get its own event.
+                                      // e.g. Michel decays may be a few microseconds after the origian event and don't want
+                                      // to call these new events
   size_t fConfigMaxMessageLookBack;
 
   size_t fNMessages;

@@ -20,8 +20,9 @@ dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
   fConfigRunNumber = ps.get<size_t>("RunNumber",1);  
   fCurRun = fConfigRunNumber;
   fConfigSubRunNumber = ps.get<size_t>("SubRunNumber",1);
-  fConfigNTickTrigger = ps.get<size_t>("NTickTrigger",2000);  // number of timestamp ticks to go 
-                                                                // before starting a new event, even if new 
+  fConfigNTickTriggerReadout = ps.get<size_t>("NTickTriggerReadout",2000);  
+  fConfigNTickNextTriggerGap = ps.get<size_t>("NTickNextTriggerGap",100);    
+
   // trigger words come in
   fConfigMaxMessageLookBack = ps.get<size_t>("MaxMessageLookBack",600);  // look 600 messages before the current trigger for
   // data that may be in the timestamp window.  Also use this to look after the last message to contribute in the 
@@ -134,13 +135,17 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
   std::unique_ptr<std::vector<raw::Module0Trigger>> oTriggers( new std::vector<raw::Module0Trigger> );
 
   // assume the current message is left over from the previous event and is the message number of its trigger
-  // starting from the current message, find the first trigger word that is at least fConfigNTickTrigger from the last trigger time
+  // starting from the current message, find the first trigger word that is at least fConfigNTickTriggerReadout from the last trigger time
 
   size_t foundtrigmessage = 0;
+
+  // ltsc's purpose is to allow for the rollover of the timestamp counter.  Want to look for rollbacks of the timestamp that are
+  // bigger than a triggered event.
+
   uint32_t ltsc = 0;
-  if (fCurTrigTS >= fConfigNTickTrigger)
+  if (fCurTrigTS >= fConfigNTickTriggerReadout)
     {
-      ltsc = fCurTrigTS - fConfigNTickTrigger;
+      ltsc = fCurTrigTS - fConfigNTickTriggerReadout;
     }
   for (size_t iMessage = fCurMessage + 1; iMessage < fNMessages; ++iMessage)
     {
@@ -168,7 +173,7 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 		  // start a new event if:  the new trigger is long enough after the previous one,
 		  // or if the clock has rolled around, or if we haven't seen a trigger yet
 
-		  if (TrigTS > fCurTrigTS + fConfigNTickTrigger || TrigTS < ltsc || fCurTrigTS == 0)
+		  if (TrigTS > fCurTrigTS + fConfigNTickNextTriggerGap || TrigTS < ltsc || fCurTrigTS == 0)
 		    {
 		      foundtrigmessage = iMessage;
 		      fCurTrigTS = TrigTS;
@@ -197,7 +202,7 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
       lowmessage = foundtrigmessage - fConfigMaxMessageLookBack; 
     }
 
-  // loop through range of messages and put everything in the event that is between fCurTrigTS and fCurTrigTS + fConfigNTickTrigger
+  // loop through range of messages and put everything in the event that is between fCurTrigTS and fCurTrigTS + fConfigNTickTriggerReadout
   // discard zero timestamps and timestamps > 1.02E7
 
   size_t lastmessageinevent = foundtrigmessage;
@@ -234,7 +239,7 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 		      std::cout << "NDLArModule0Source: Found a trigger: " << TrigTS << " Trigger bits: " << (int) TrigBits << " IO_Group: " << (int) IO_Group << std::endl;
 		    }
 
-		  if (TrigTS >= fCurTrigTS && TrigTS < fCurTrigTS + fConfigNTickTrigger)
+		  if (TrigTS >= fCurTrigTS && TrigTS < fCurTrigTS + fConfigNTickTriggerReadout)
 		    {
 		      oTriggers->emplace_back(IO_Group, TrigBits, TrigTS);
 		      lastmessageinevent = iMessage;
@@ -265,7 +270,7 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 		  double deltaTS = (double) dataTS - (double) fCurTrigTS;
 		  fHist_deltats->Fill(deltaTS);
 
-		  if (dataTS >= fCurTrigTS && dataTS < fCurTrigTS + fConfigNTickTrigger)
+		  if (dataTS >= fCurTrigTS && dataTS < fCurTrigTS + fConfigNTickTriggerReadout)
 		    {
 		      lastmessageinevent = iMessage;
 		      auto cinfo = cmap->GetChanInfoFromElectronics(
