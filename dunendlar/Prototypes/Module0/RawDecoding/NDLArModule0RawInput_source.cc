@@ -42,9 +42,10 @@ void dune::NDLArModule0RawInputDetail::readFile(
                                                 std::string const & filename, art::FileBlock*& fb) {
   fHDFFile = dune::HDF5Utils::openFile(filename);
   fHDFFile->runNumber = fCurRun;
-  fCurEvent = 0;
+  fCurEvent   = 0;
   fCurMessage = 0;
-  fCurTrigTS = 0;
+  fCurWord    = -1;  // no trigger found yet.  We will add one to this number in a loop bound
+  fCurTrigTS  = 0;
 
   // read all the io_groups into memory.  Only reason to do this is because we need to read all the
   // messages into memory at the same time too.  The i/o groups take less space.
@@ -148,7 +149,7 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
     {
       ltsc = fCurTrigTS - fConfigNTickTriggerReadout;
     }
-  for (size_t iMessage = fCurMessage + 1; iMessage < fNMessages; ++iMessage)
+  for (size_t iMessage = fCurMessage; iMessage < fNMessages; ++iMessage)
     {
       void *messageptr = fRData[iMessage].p;
       dunedaq::detdataformats::pacman::PACMANFrame::PACMANMessageHeader *hdr = pmf.get_msg_header(messageptr);
@@ -161,7 +162,7 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
       if (mtype == dunedaq::detdataformats::pacman::PACMANFrame::msg_type::DATA_MSG)
         {
           //std::cout << "unpacking data words" << std::endl;
-          for (size_t iword = 0; iword < hdr->words; ++iword)
+          for (int iword = fCurWord + 1; iword < hdr->words; ++iword)
             {
               dunedaq::detdataformats::pacman::PACMANFrame::PACMANMessageWord* mwp = pmf.get_msg_word(messageptr,iword);
               if ( mwp->word.type == dunedaq::detdataformats::pacman::PACMANFrame::word_type::TRIG_WORD )
@@ -177,16 +178,19 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 		  if (TrigTS > fCurTrigTS + fConfigNTickNextTriggerGap || TrigTS < ltsc || fCurTrigTS == 0)
 		    {
 		      foundtrigmessage = iMessage;
+                      fCurMessage = iMessage;
+		      fCurWord = iword;
 		      fCurTrigTS = TrigTS;
                       if (fLogLevel > 0)
                         {
-                          std::cout << "NDLArModule0Source: Found an event trigger: " << TrigTS << " Trig Bits: " << TrigBits << " IO_Group: " << (int) IO_Group << " " << iMessage << " " << fCurMessage << std::endl;
+                          std::cout << "NDLArModule0Source: Found an event trigger: " << TrigTS << " Trig Bits: " << TrigBits << " IO_Group: " << (int) IO_Group << " " << iMessage << " " << fCurMessage << " word: " << fCurWord << std::endl;
                         }
 		      break;
 		    }
                 }
-	      if (foundtrigmessage) break;
+              if (foundtrigmessage) break;
 	    }
+	  if (foundtrigmessage == 0) fCurWord = -1;
 	}
       if (foundtrigmessage) break;
     }
@@ -195,7 +199,6 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
     {
       return false;
     }
-  fCurMessage = foundtrigmessage;
 
   size_t lowmessage = 0;
   if (fConfigMaxMessageLookBack <= foundtrigmessage)

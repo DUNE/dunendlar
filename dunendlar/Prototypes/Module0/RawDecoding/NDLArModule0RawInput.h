@@ -67,9 +67,10 @@ class dune::NDLArModule0RawInputDetail {
   size_t fConfigMaxMessageLookBack;
 
   size_t fNMessages;
-  size_t fCurEvent;  // triggers are not divided up in the file, so we keep track here.
-  size_t fCurRun;  // triggers are not divided up in the file, so we keep track here.
-  size_t fCurMessage;
+  size_t fCurEvent;  // triggers are not divided up in runs and events in the file, so we keep track here.
+  size_t fCurRun;
+  size_t fCurMessage;  // message and word within the message of current trigger
+  int    fCurWord;   // word index of last trigger found in message. -1 means not found yet.
   uint32_t fCurTrigTS;
   uint8_t fCurTrigBits;
   uint8_t fCurIO_Group;
