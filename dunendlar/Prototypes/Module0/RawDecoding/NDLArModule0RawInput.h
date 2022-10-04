@@ -89,5 +89,6 @@ class dune::NDLArModule0RawInputDetail {
   TH1F *fHist_tts;
   TH1F *fHist_dts;
   TH1F *fHist_deltats;
+  TH1F *fHist_deltatrigtime;
  };
 #endif

@@ -1,11 +1,10 @@
+#include "NDLArModule0RawInput.fcl"
 #include "NDLArModule0ChannelMapService.fcl"
 #include "NDLArModule0SpacePointMaker.fcl"
 
 process_name: testmodule0readerreco
 
-source: {
-  module_type: NDLArModule0RawInput
-}
+source: @local::ndlarmodule0rawinput
 
 outputs: {
   rootout: {

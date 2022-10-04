@@ -1,0 +1,13 @@
+BEGIN_PROLOG
+
+# ND-LAr Module 0 HDF5 raw input source configuration parameters
+
+ndlarmodule0rawinput: {
+  RunNumber: 1                         # run number for first input file
+  module_type: NDLArModule0RawInput    # source plug-in name
+  NTickTriggerReadout: 2000            # readout window size
+  NTickNextTriggerGap: 100             # triggers separated by more than this get new events
+  LogLevel: 0                          # debug printout
+}
+
+END_PROLOG

@@ -35,6 +35,7 @@ dune::NDLArModule0RawInputDetail::NDLArModule0RawInputDetail(
   fHist_tts = tfs->make<TH1F>("tts","Trigger Timestamps",200,0,2E7);
   fHist_dts = tfs->make<TH1F>("dts","LArPix Data Timestamps",200,0,2E7);
   fHist_deltats = tfs->make<TH1F>("deltats","LArPix - Trigger Timestamps",200,-2000.0,4000.0);
+  fHist_deltatrigtime = tfs->make<TH1F>("deltatrigtime","Delta Trig Time",200,0.0,1000.0);
 }
 
 void dune::NDLArModule0RawInputDetail::readFile(
@@ -239,6 +240,11 @@ bool dune::NDLArModule0RawInputDetail::readNext(art::RunPrincipal const* const i
 		      std::cout << "NDLArModule0Source: Found a trigger: " << TrigTS << " Trigger bits: " << (int) TrigBits << " IO_Group: " << (int) IO_Group << std::endl;
 		    }
 
+                  double deltatrigtime = (double) TrigTS - (double) fCurTrigTS;
+		  if (TrigTS > fCurTrigTS)
+		    {
+		      fHist_deltatrigtime->Fill(deltatrigtime);
+		    }
 		  if (TrigTS >= fCurTrigTS && TrigTS < fCurTrigTS + fConfigNTickTriggerReadout)
 		    {
 		      oTriggers->emplace_back(IO_Group, TrigBits, TrigTS);

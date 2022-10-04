@@ -1,10 +1,9 @@
+#include "NDLArModule0RawInput.fcl"
 #include "NDLArModule0ChannelMapService.fcl"
 
 process_name: testmodule0reader
 
-source: {
-  module_type: NDLArModule0RawInput
-}
+source: @local::ndlarmodule0rawinput}
 
 outputs: {
   rootout: {
