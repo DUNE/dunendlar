@@ -23,6 +23,7 @@
 #include "dunendlar/DUNENDLArObj/Module0Trigger.h"
 #include "dunendlar/Prototypes/Module0/ChannelMap/NDLArModule0ChannelMapService.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
+#include "lardataobj/RecoBase/PointCharge.h"
 
 class NDLArModule0SpacePointMaker;
 
@@ -46,6 +47,7 @@ private:
 
   std::string fRawPixelLabel;
   double fDriftVel; // drift velocity -- cm per tick
+  double fADCToCharge;  // conversion factor for ADC values to charge.  For now, just one global one
 
 };
 
@@ -56,9 +58,11 @@ NDLArModule0SpacePointMaker::NDLArModule0SpacePointMaker(fhicl::ParameterSet con
 {
   fRawPixelLabel = p.get<std::string>("RawPixelLabel","daq");
   fDriftVel = p.get<double>("DriftVel",0.016);  // cm per tick.  1 tick = 0.1 microsecond
+  fADCToCharge = p.get<double>("ADCToCharge",1.0); // calibration factor for ADC
   consumes<std::vector<raw::RawPixel>>(fRawPixelLabel);
   consumes<std::vector<raw::Module0Trigger>>(fRawPixelLabel);
   produces<std::vector<recob::SpacePoint>>();
+  produces<std::vector<recob::PointCharge>>();
 }
 
 void NDLArModule0SpacePointMaker::produce(art::Event& e)
@@ -66,6 +70,7 @@ void NDLArModule0SpacePointMaker::produce(art::Event& e)
   art::ServiceHandle<dune::NDLArModule0ChannelMapService> cmap;
 
   std::unique_ptr<std::vector<recob::SpacePoint>> spacepoints(new std::vector<recob::SpacePoint>);
+  std::unique_ptr<std::vector<recob::PointCharge>> pointcharges(new std::vector<recob::PointCharge>);
 
   auto rawpixhandle = e.getValidHandle<std::vector<raw::RawPixel>>(fRawPixelLabel);
   auto rawtrighandle = e.getValidHandle<std::vector<raw::Module0Trigger>>(fRawPixelLabel);
@@ -103,11 +108,14 @@ void NDLArModule0SpacePointMaker::produce(art::Event& e)
 	    {
 	      xe32[i] = 0;
 	    }
+	  recob::PointCharge::Charge_t charge = rpx.GetADC()*fADCToCharge;
 	  spacepoints->emplace_back(xv32,xe32,chisq,id);
+	  pointcharges->emplace_back(charge);
 	}
     }
 
   e.put(std::move(spacepoints));
+  e.put(std::move(pointcharges));
 
 }
 
