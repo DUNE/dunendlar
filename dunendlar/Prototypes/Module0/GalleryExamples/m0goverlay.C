@@ -19,13 +19,9 @@ using namespace art;
 using namespace std;
 
 // make a poor-man's event display of recob::SpacePoints -- for the ievcount'th event in the file
-// spacepoint tag string can be "pandora" or "pmtrack"
-// This version colors red the spacepoints that are in a cylinder about an approximate beam axis
-// the parameters of the cylinder are hard-coded
-// Tom Junk, Fermilab, Sep. 18, 2016.  Based on gallery demos by Marc Paterno.
-// Usage:  setup dunetpc and gallery, run root.
-//  .L pdspdisp.C++
-// pdspdisp("inputfile.root",0);
+// example to overlay the first 200 events in a rootfile, with the default filename.
+// .L m0goverlay.C
+// m0goverlay(200);
 
 void
 m0goverlay(size_t ievcount=0, std::string const& filename="tmpmodule0.root",  std::string spacepointtagstring="ndlarm0spacepoint")
