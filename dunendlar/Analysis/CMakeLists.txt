@@ -24,6 +24,8 @@ art_make(BASENAME_ONLY
   art::Persistency_Provenance
   art::Utilities
   messagefacility::MF_MessageLogger
+  LIBHDF5
+  LIBHDF5_HL
   )
 install_headers()
 install_fhicl()

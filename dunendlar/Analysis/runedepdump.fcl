@@ -1,0 +1,35 @@
+#include "services_dunendlar.fcl"
+#include "edepdumpmodule.fcl"
+
+process_name: SimDump
+
+source:
+{
+  module_type: RootInput
+}
+
+outputs:
+{
+}
+
+
+services:
+{
+  TFileService: { fileName: "edepdump.root" }
+  FileCatalogMetadataDUNE:      {}
+  FileCatalogMetadata:          @local::art_file_catalog_mc
+  TFileMetadataDUNE:            @local::dune_tfile_metadata
+  @table::dunendlartms_services
+}
+
+
+physics:
+{
+  analyzers:
+  {
+    edepdump: @local::edepdump_dunendlartms
+  }
+
+  ana:  [ edepdump ]
+  end_paths: [ ana ]
+}
