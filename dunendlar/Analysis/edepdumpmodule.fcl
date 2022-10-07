@@ -1,0 +1,20 @@
+BEGIN_PROLOG
+
+edepdump_dunendlartms:
+{
+    module_type:         "EdepDump"
+    GenieGenModuleLabel: "generator"
+    GeantModuleLabel:    "largeant"
+    SEDModuleLabels: ["largeant:LArG4DetectorServicevolMuonTaggerPlane",
+                      "largeant:LArG4DetectorServicevolTPCActive",
+                      "largeant:LArG4DetectorServicescinBoxlvTMS"]
+}
+
+edepdump_dunendmodule0:
+{
+    module_type:         "EdepDump"
+    GenieGenModuleLabel: "dummy"
+    SEDModuleLabels: ["largeant:LArG4DetectorServicevolTPCActive"]
+}
+
+END_PROLOG
