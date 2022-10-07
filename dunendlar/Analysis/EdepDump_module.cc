@@ -29,7 +29,7 @@
 #include "TFile.h"
 #include "TGeoManager.h"
 
-#include "hdf5_utils.h"
+#include "edep_hdf5_utils.h"
 
 #include <vector>
 #include <string>
@@ -66,6 +66,7 @@ public:
 
 private:
 
+  int fLogLevel;
   const art::InputTag fGenieGenModuleLabel;
   const art::InputTag fGeantModuleLabel;
   vector<art::InputTag> fSEDModuleLabels;
@@ -171,6 +172,8 @@ dunend::EdepDump::EdepDump(fhicl::ParameterSet const& p)
   // Call appropriate consumes<>() for any products to be retrieved by this module.
   fHDF5DumpFileName      = p.get<std::string>("HDF5NAME", "hdf5out.h5");
   CreateNewTable= true;
+
+  fLogLevel              = p.get<int>("LogLevel", 3 );
 
   //create array type
   //hsize_t arr_dim3[] = {3};
@@ -348,7 +351,7 @@ void dunend::EdepDump::analyze(art::Event const& e)
     for (auto & sed : sedlist){
 
       segments_dt data;
-      std::cout<<eventID<<std::endl;
+      if(fLogLevel>10) std::cout<<eventID<<std::endl;
       data.eventID=eventID;
       data.trackID=sed->TrackID();
       data.n_electrons=sed->NumElectrons();
