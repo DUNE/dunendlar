@@ -17,10 +17,10 @@
 #include <algorithm>
 #include <set>
 
-// so far, nothing needs to be done in the constructor
-
 dune::NDLArModule0ChannelMapSP::NDLArModule0ChannelMapSP()
 {
+  fInitialized = false;   // set to true when we read the map from the file. Use to protect against second initialization
+                          // to ensure thread safety.
 }
 
 void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapfile,
@@ -28,19 +28,25 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
                                                      std::vector<double> &anodeyoffset,
                                                      std::vector<double> &anodezoffset)
 {
+
+  if (fInitialized)   // ignore second and subsequent initializations
+    {
+      return;
+    }
+
   std::ifstream inFile(chanmapfile, std::ios::in);
   std::string line;
 
   std::getline(inFile,line);
   std::string tile_layout_version = line;
 
-  double pixel_pitch;
+  double fPixelPitch;
   std::getline(inFile,line);
   { 
     std::stringstream linestream(line);
-    linestream >> pixel_pitch;
+    linestream >> fPixelPitch;
   }
-  pixel_pitch /= 10.0;
+  fPixelPitch /= 10.0;
 
 
   typedef struct ccpos_struct
@@ -92,8 +98,9 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
           ymax = pos.p1;
         }
     }
-  double x_size = (xmax - xmin + 1) * pixel_pitch;
-  double y_size = (ymax - ymin + 1) * pixel_pitch;
+
+  double x_size = (xmax - xmin + 1) * fPixelPitch;
+  double y_size = (ymax - ymin + 1) * fPixelPitch;
   double half_x_size = x_size/2.0;
   double half_y_size = y_size/2.0;
   // std::cout << "x, y sizes: " << x_size << " " << y_size << std::endl;
@@ -269,8 +276,8 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
               unsigned p0 = pos.p0;
               unsigned p1 = pos.p1;           
 
-              double x = (p0 + 0.5) * pixel_pitch - half_x_size;
-              double y = (p1 + 0.5) * pixel_pitch - half_y_size;
+              double x = (p0 + 0.5) * fPixelPitch - half_x_size;
+              double y = (p1 + 0.5) * fPixelPitch - half_y_size;
 
               x *= tileo2;
               y *= tileo1;
@@ -330,6 +337,39 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
 
       fOfflToChanInfo.at(p.offlinechan) = &fDetToChanInfo[p.io_group][p.tile][p.chip][p.chipchannel];      
     }
+
+  fInitialized = true;
+
+  // calculate some parameters needed for the position to channel formulas
+  // split into a separate method for readability.  This method calls GetChanInfoFromOfflChan,
+  // so the fInitialized flag needs to be set
+
+  InitializeChanLocParams();
+}
+
+void dune::NDLArModule0ChannelMapSP::InitializeChanLocParams()
+{
+  auto c0info = GetChanInfoFromOfflChan(0);      // corner channel.  Already have pitch
+  auto cztile = GetChanInfoFromOfflChan(7*10);   // first channel in the next tile over in z
+  uint32_t nchanspertile = 4900;
+  auto cytile = GetChanInfoFromOfflChan(2*nchanspertile);  // first channel one tile up in y
+
+  fNChansPerSide = 8*nchanspertile;
+  fNChansPerRow = 7*10*2;
+  fNChansPerTileRow = 2*nchanspertile;
+  auto lastchan = GetChanInfoFromOfflChan(fNChans - 1);
+
+  fXMin = c0info.xyz[0];
+  fYMin = c0info.xyz[1];  // to check -- half a pixel pitch offset needed?
+  fZMin = c0info.xyz[2];  // to check -- half a pixel pitch offset needed?
+  fXMax = lastchan.xyz[0];
+  fYMax = lastchan.xyz[1]; // to check -- half a pixel pitch offset needed?
+  fZMax = lastchan.xyz[2]; // to check -- half a pixel pitch offset needed?
+
+  fYTileSep = cytile.xyz[1] = c0info.xyz[1];
+  fZTileSep = cztile.xyz[2] - c0info.xyz[2];
+
+  fTPCCathodeLoc = 0.5*(fXMin + fXMax);
 }
 
 dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t 
@@ -338,6 +378,11 @@ dune::NDLArModule0ChannelMapSP::GetChanInfoFromElectronics(
                                                            unsigned int io_channel,
                                                            unsigned int chip,
                                                            unsigned int chipchannel ) const {
+
+  if (!fInitialized)
+    {
+      throw std::logic_error("NDLArModule0 channel map lookup GetChanInfoFromElectronics called before initialized");
+    }
 
   NDLArModule0ChanInfo_t badInfo = {};
   badInfo.valid = false;
@@ -371,6 +416,11 @@ dune::NDLArModule0ChannelMapSP::GetChanInfoFromElectronics(
 
 dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t dune::NDLArModule0ChannelMapSP::GetChanInfoFromOfflChan(unsigned int offlineChannel) const {
 
+  if (!fInitialized)
+    {
+      throw std::logic_error("NDLArModule0 channel map lookup GetChanInfoFromOfflChan called before initialized");
+    }
+
   if (offlineChannel >= fNChans)
     {
       NDLArModule0ChanInfo_t badInfo = {};
@@ -381,4 +431,38 @@ dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t dune::NDLArModule0Channel
   NDLArModule0ChanInfo_t outputinfo = *fOfflToChanInfo.at(offlineChannel);
 
   return outputinfo;
+}
+
+// Compute offline channel number algorithmically, and then look up the channel info from the LUT
+
+dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t dune::NDLArModule0ChannelMapSP::GetChanInfoFromXYZ(double x, double y, double z) const {
+
+  if (!fInitialized)
+    {
+      throw std::logic_error("NDLArModule0 channel map lookup GetChanInfoFromXYZ called before initialized");
+    }
+
+  NDLArModule0ChanInfo_t badInfo = {};
+  badInfo.valid = false;
+  if (x < fXMin || x > fXMax || y < fYMin || y > fYMax || z < fZMin || z > fZMax)
+    {
+      return badInfo;
+    } 
+
+  unsigned int offlineChannel = 0;
+
+  unsigned int xCo = 0;     // x-channel offset
+  if (x > fTPCCathodeLoc)
+    {
+      xCo = fNChansPerSide;
+    }
+  
+  unsigned int iYTile = (y - fYMin)/fYTileSep;                // truncate to an integer
+  unsigned int iYRow = 0.5 + (y - iYTile*fYTileSep)/fPixelPitch;
+
+  unsigned int iZTile = (z -fZMin)/fZTileSep;
+  unsigned int iZColumn = 0.5 + (z - iZTile*fZTileSep)/fPixelPitch;
+
+  offlineChannel = iZColumn + fNChansPerRow*iYRow + fNChansPerTileRow*iYTile + xCo;
+  return GetChanInfoFromOfflChan(offlineChannel);
 }
