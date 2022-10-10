@@ -21,6 +21,7 @@
 #include "art_root_io/TFileService.h"
 #include "larcore/Geometry/Geometry.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
+#include "lardataobj/RecoBase/PointCharge.h"
 
 #include "TTree.h"
 #include "TFile.h"
@@ -98,11 +99,18 @@ void dunend::SPDump::analyze(art::Event const& e)
   if (spListHandle)
     art::fill_ptr_vector(splist, spListHandle);
 
-  for (auto & sp: splist){
-    x.push_back(sp->XYZ()[0]);
-    y.push_back(sp->XYZ()[1]);
-    z.push_back(sp->XYZ()[2]);
-    charge.push_back(1);
+  // * Space Point information
+  std::vector<art::Ptr<recob::PointCharge> > pclist;
+  auto pcListHandle = e.getHandle< std::vector<recob::PointCharge> >(fSpacePointModuleLabel);
+  if (pcListHandle)
+    art::fill_ptr_vector(pclist, pcListHandle);
+
+  //for (auto & sp: splist){
+  for (size_t i = 0; i<splist.size(); ++i){
+    x.push_back(splist[i]->XYZ()[0]);
+    y.push_back(splist[i]->XYZ()[1]);
+    z.push_back(splist[i]->XYZ()[2]);
+    charge.push_back(pclist[i]->charge());
   }
 
   fTree->Fill();

@@ -10,7 +10,7 @@ namespace hdf5_utils{
 
   const size_t NFIELDS_VTX = 4;
   const size_t NFIELDS_TRAJ = 14;
-  const size_t NFIELDS_SEG = 24;
+  const size_t NFIELDS_SEG = 25;
 
 
   //vertices
@@ -58,6 +58,7 @@ namespace hdf5_utils{
     float xyz_end[3]; //xyz_end,3, f4
     float t_start; //t_start, f4
     float t_end; //t_end, f4
+    float t_0; //t_0, f4
   } trajectories_dt;
   trajectories_dt trajectories_test;
 
@@ -128,6 +129,7 @@ namespace hdf5_utils{
     float t_end; //t_end; f4
     float t0_start; //t0_start; f4
     float t0_end; //t0_end; f4
+    float t0; //t0; f4
     float tran_diff; //tran_diff; f4
     float long_diff; //long_diff; f4
     float x; //x; f4
@@ -135,18 +137,18 @@ namespace hdf5_utils{
     float z; //z; f4
     float t; //t; f4
     float dE; //dE; f4
-    float dEdX; //dEdX; f4
+    float dEdx; //dEdx; f4
   } segments_dt;
   segments_dt segments_test;
   const char *segments_names[NFIELDS_SEG]  = { 
     "eventID", "trackID", "n_electrons", "n_photons", "pdgId", "pixel_plane",
     "x_start", "x_end", "y_start", "y_end", "z_start", "z_end", "t_start", "t_end",
-    "t0_start", "t0_end", "tran_diff", "long_diff", "x", "y", "z", "t", "dE", "dEdX" 
+    "t0_start", "t0_end", "t0", "tran_diff", "long_diff", "x", "y", "z", "t", "dE", "dEdx" 
   };
   hid_t segments_types[NFIELDS_SEG] = {
     H5T_STD_U32LE, H5T_STD_U32LE, H5T_STD_U32LE, H5T_IEEE_F32LE,
     H5T_STD_I32LE,H5T_STD_I32LE,
-H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE
+H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE
   };
   size_t segments_size = sizeof(segments_dt);
   size_t segments_offset[NFIELDS_SEG] = {
@@ -166,6 +168,7 @@ H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_I
     HOFFSET( segments_dt, t_end),
     HOFFSET( segments_dt, t0_start),
     HOFFSET( segments_dt, t0_end),
+    HOFFSET( segments_dt, t0),
     HOFFSET( segments_dt, tran_diff),
     HOFFSET( segments_dt, long_diff),
     HOFFSET( segments_dt, x),
@@ -173,7 +176,7 @@ H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_I
     HOFFSET( segments_dt, z),
     HOFFSET( segments_dt, t),
     HOFFSET( segments_dt, dE),
-    HOFFSET( segments_dt, dEdX)
+    HOFFSET( segments_dt, dEdx)
   };
   size_t segments_sizes[NFIELDS_SEG] = {
     sizeof(segments_test.eventID),
@@ -192,6 +195,7 @@ H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_I
     sizeof(segments_test.t_end),
     sizeof(segments_test.t0_start),
     sizeof(segments_test.t0_end),
+    sizeof(segments_test.t0),
     sizeof(segments_test.tran_diff),
     sizeof(segments_test.long_diff),
     sizeof(segments_test.x),
@@ -199,7 +203,7 @@ H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_IEEE_F32LE,H5T_I
     sizeof(segments_test.z),
     sizeof(segments_test.t),
     sizeof(segments_test.dE),
-    sizeof(segments_test.dEdX)
+    sizeof(segments_test.dEdx)
   };
 
 }

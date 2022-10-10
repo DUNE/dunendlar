@@ -356,7 +356,7 @@ void dunend::EdepDump::analyze(art::Event const& e)
       data.trackID=sed->TrackID();
       data.n_electrons=sed->NumElectrons();
       data.n_photons=sed->NumPhotons();
-      data.n_photons=sed->PdgCode();
+      data.pdgId=sed->PdgCode();
       data.x_start = sed->StartX();
       data.y_start = sed->StartY();
       data.z_start = sed->StartZ();
@@ -368,7 +368,13 @@ void dunend::EdepDump::analyze(art::Event const& e)
       data.x = sed->MidPointX();
       data.y = sed->MidPointY();
       data.z = sed->MidPointZ();
-
+      data.t0 = sed->Time();
+      data.dE = sed->Energy();
+      float dx = sqrt(pow(data.x_start-data.x_end,2)+
+                      pow(data.y_start-data.y_end,2)+
+                      pow(data.z_start-data.z_end,2));
+      if (dx) data.dEdx = data.dE/dx;
+      else data.dEdx = 0;
       data.pixel_plane=0;
       data.t_start = 0;
       data.t_end= 0;
