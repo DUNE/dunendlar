@@ -9,7 +9,7 @@
 // The SP in the class and file name means "Service Provider"
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "NDLArModule0ChannelMapSP.h"
+#include "dunendlar/Prototypes/Module0/ChannelMap/NDLArModule0ChannelMapSP.h"
 
 #include <iostream>
 #include <fstream>
@@ -40,7 +40,6 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
   std::getline(inFile,line);
   std::string tile_layout_version = line;
 
-  double fPixelPitch;
   std::getline(inFile,line);
   { 
     std::stringstream linestream(line);
@@ -355,7 +354,8 @@ void dune::NDLArModule0ChannelMapSP::InitializeChanLocParams()
   auto cytile = GetChanInfoFromOfflChan(2*nchanspertile);  // first channel one tile up in y
 
   fNChansPerSide = 8*nchanspertile;
-  fNChansPerRow = 7*10*2;
+  fNChansPerTRow = 7*10;             // channels along an edge of a tile
+  fNChansPerRow = 2*fNChansPerTRow;  // channels along edge of two tiles -- one row in y
   fNChansPerTileRow = 2*nchanspertile;
   auto lastchan = GetChanInfoFromOfflChan(fNChans - 1);
 
@@ -366,7 +366,7 @@ void dune::NDLArModule0ChannelMapSP::InitializeChanLocParams()
   fYMax = lastchan.xyz[1]; // to check -- half a pixel pitch offset needed?
   fZMax = lastchan.xyz[2]; // to check -- half a pixel pitch offset needed?
 
-  fYTileSep = cytile.xyz[1] = c0info.xyz[1];
+  fYTileSep = cytile.xyz[1] - c0info.xyz[1];
   fZTileSep = cztile.xyz[2] - c0info.xyz[2];
 
   fTPCCathodeLoc = 0.5*(fXMin + fXMax);
@@ -458,11 +458,11 @@ dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t dune::NDLArModule0Channel
     }
   
   unsigned int iYTile = (y - fYMin)/fYTileSep;                // truncate to an integer
-  unsigned int iYRow = 0.5 + (y - iYTile*fYTileSep)/fPixelPitch;
+  unsigned int iYRow = 0.5 + (y - fYMin - iYTile*fYTileSep)/fPixelPitch;
 
   unsigned int iZTile = (z -fZMin)/fZTileSep;
-  unsigned int iZColumn = 0.5 + (z - iZTile*fZTileSep)/fPixelPitch;
+  unsigned int iZColumn = 0.5 + (z - fZMin - iZTile*fZTileSep)/fPixelPitch;
 
-  offlineChannel = iZColumn + fNChansPerRow*iYRow + fNChansPerTileRow*iYTile + xCo;
+  offlineChannel = iZColumn + fNChansPerTRow*iZTile + fNChansPerRow*iYRow + fNChansPerTileRow*iYTile + xCo;
   return GetChanInfoFromOfflChan(offlineChannel);
 }

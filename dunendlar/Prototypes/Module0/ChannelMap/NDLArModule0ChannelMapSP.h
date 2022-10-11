@@ -76,6 +76,7 @@ class dune::NDLArModule0ChannelMapSP {
   double fYTileSep;
   double fZTileSep;
   size_t fNChansPerRow;
+  size_t fNChansPerTRow;
   size_t fNChansPerTileRow;
   size_t fNChansPerSide;
   size_t fTPCCathodeLoc;
