@@ -306,14 +306,14 @@ void dune::NDLArModule0ChannelMapSP::ReadMapFromFile(const std::string &chanmapf
   std::sort(pinfo.begin(), pinfo.end(), 
             [](const NDLArModule0ChanInfo_t & a, const NDLArModule0ChanInfo_t & b) -> bool
             {
-              double eps = 0.00001;
-              if (a.xyz[0] < b.xyz[0]) return true;
+              double eps = 0.001;
+              if (a.xyz[0] < b.xyz[0] - eps) return true;
               if (a.xyz[0] < b.xyz[0] + eps)
                 {
-                  if (a.xyz[1] < b.xyz[1]) return true;
+                  if (a.xyz[1] < b.xyz[1] - eps) return true;
                   if (a.xyz[1] < b.xyz[1] + eps)
                     {
-                      if (a.xyz[2] < b.xyz[2]) return true;
+                      if (a.xyz[2] < b.xyz[2] - eps) return true;
                     }
                 }
               return false;
