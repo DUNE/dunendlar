@@ -6,7 +6,7 @@
 //
 // Implementation of hardware-offline channel mapping reading from a file.
 // art-independent class  
-// The SP in the class and file anme means "Service Provider"
+// The SP in the class and file name means "Service Provider"
 // DUNE ND-LAr Module 0
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -56,15 +56,22 @@ class dune::NDLArModule0ChannelMapSP {
 
   NDLArModule0ChanInfo_t GetChanInfoFromOfflChan(unsigned int offlchan) const;
 
+  // lookup by Y and Z within the readout plane, and use X to determine which readout plane to look up
+
   NDLArModule0ChanInfo_t GetChanInfoFromXYZ(double x, double y, double z) const;
 
-  unsigned int fNChans;  // 78400 nominal chans but compute it from input
+  // this method returns a vector of channel infos, the first of which correspond to the x, y, z input, and the
+  // remainder are within a radius r (in cm) in the yz plane
+
+  std::vector<NDLArModule0ChanInfo_t> GetChanInfoFromXYZWithNeighbors(double x, double y, double z, double r) const;
 
  private:
 
   void InitializeChanLocParams();
 
   bool fInitialized;
+
+  unsigned int fNChans;  // 78400 nominal chans but compute it from input
 
   double fXMin;
   double fXMax;

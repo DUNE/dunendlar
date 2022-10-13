@@ -466,3 +466,75 @@ dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t dune::NDLArModule0Channel
   offlineChannel = iZColumn + fNChansPerTRow*iZTile + fNChansPerRow*iYRow + fNChansPerTileRow*iYTile + xCo;
   return GetChanInfoFromOfflChan(offlineChannel);
 }
+
+
+std::vector<dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t>
+  dune::NDLArModule0ChannelMapSP::GetChanInfoFromXYZWithNeighbors(double x, double y, double z, double r) const {
+
+  if (r<0)
+    {
+      throw std::range_error("NDLArModule0ChannelMapSP::GetChanInfoFromXYZWithNeighbors Negative Radius");
+    }
+
+  std::vector<dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t> cvec;
+  cvec.push_back(GetChanInfoFromXYZ(x,y,z));   // first element is the channel in the center
+
+  // search for neighbors in a box
+
+  std::set<uint32_t> idset;
+  double ycent = cvec.back().xyz[1];
+  double zcent = cvec.back().xyz[1];
+  double eps = 0.01;
+  double rsq = r*r;
+  size_t irad = (size_t) ((r-eps)/fPixelPitch + 1.0);
+  double fp2 = fPixelPitch/2.0;
+
+  double ymin = ycent - irad*fPixelPitch;
+  double zmin = zcent - irad*fPixelPitch;
+  size_t nsteps = 2*irad + 1;
+
+  for (size_t iy=0; iy<nsteps; ++iy)
+    {
+      double yseek = ymin + iy*fPixelPitch;
+      for (size_t iz=0; iz<nsteps; ++iz)
+	{
+	  double zseek = zmin + iz*fPixelPitch;
+	  double rseeksq = (yseek - y)*(yseek - y) + (zseek - z)*(zseek - z);
+	  bool inside = false;
+	  if (rseeksq < rsq + eps) 
+	    {
+	      inside = true;
+	    }
+	  else  // center is outside -- check the corners to see if any of them are inside the circle
+	    {
+	      for (int icy=-1;icy<=1; icy +=2 )
+		{
+		  double ysc = yseek + icy*fp2;
+		  for (int icz=-1;icz<=1; icz += 2)
+		    {
+		      double zsc = zseek + icz*fp2;
+ 	              double rsc = (ysc - y)*(ysc - y) + (zsc - z)*(zsc - z);
+		      if (rsc < rsq + eps)
+			{
+			  inside = true;
+			  break;
+			}
+		    }
+		}
+	    }
+	  if (inside)
+	    {
+	      auto pn = GetChanInfoFromXYZ(x,yseek,zseek);
+	      if (pn.offlinechan != cvec.back().offlinechan && pn.valid)
+		{
+		  idset.emplace(pn.offlinechan);
+		}
+	    }
+	}
+    }
+  for (const auto &si : idset)
+    {
+      cvec.push_back(GetChanInfoFromOfflChan(si));
+    }
+  return cvec;
+}
