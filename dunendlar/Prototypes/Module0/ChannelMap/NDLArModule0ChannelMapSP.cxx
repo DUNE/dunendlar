@@ -493,6 +493,10 @@ std::vector<dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t>
   double zmin = zcent - irad*fPixelPitch;
   size_t nsteps = 2*irad + 1;
 
+  // to think about -- this logic assumes the pixels are on a regular grid and tries to be
+  // a bit conservative about what to include.  But if some neighbors are on a neighboring tile,
+  // the sub-pixel distances may be inaccurate
+
   for (size_t iy=0; iy<nsteps; ++iy)
     {
       double yseek = ymin + iy*fPixelPitch;
