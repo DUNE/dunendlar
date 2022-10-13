@@ -36,6 +36,8 @@ public:
 
   dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t GetChanInfoFromXYZ(double x, double y, double z) const;
 
+  std::vector<dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t> GetChanInfoFromXYZWithNeighbors(double x, double y, double z, double r) const;
+
 private:
 
   dune::NDLArModule0ChannelMapSP fModule0ChanMap;

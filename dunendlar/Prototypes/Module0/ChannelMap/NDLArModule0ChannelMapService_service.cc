@@ -57,4 +57,12 @@ dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t dune::NDLArModule0Channel
 
 }
 
+dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t dune::NDLArModule0ChannelMapService::GetChanInfoFromXYZ(double x, double y, double z) const {
+  return GetChanInfoFromXYZ(x, y, z);
+}
+
+std::vector<dune::NDLArModule0ChannelMapSP::NDLArModule0ChanInfo_t> dune::NDLArModule0ChannelMapService::GetChanInfoFromXYZWithNeighbors(double x, double y, double z, double r) const {
+  return GetChanInfoFromXYZWithNeighbors(x, y, z, r);
+}
+
 DEFINE_ART_SERVICE(dune::NDLArModule0ChannelMapService)
