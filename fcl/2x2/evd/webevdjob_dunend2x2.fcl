@@ -1,0 +1,31 @@
+#include "services_dunendlar.fcl"
+
+#include "WebEVD.fcl"
+
+process_name: WebEVD
+
+source:
+{
+  module_type: RootInput
+}
+
+services:
+{
+  @table::dunend2x2_services
+  GeometryConfigurationWriter: {}
+  InputSeeker: {}
+}
+
+# Faster
+#services.BackTrackerService: @erase
+#services.PhotonBackTrackerService: @erase
+
+physics:
+{
+  analyzers:
+  {
+    evd: @local::standard_webevd
+  }
+
+  evd_path: [ evd ]
+}

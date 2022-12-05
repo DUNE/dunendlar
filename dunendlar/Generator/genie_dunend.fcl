@@ -19,6 +19,39 @@ dunendlar_genie.FluxType:         "mono"
 dunendlar_genie.DefinedVtxHistRange: true
 dunendlar_genie.VtxPosHistRange: [-1000,1000,-1000,1000,-1000,1000]
 
+
+# ArgonCube 2x2 NuMI Configuration
+
+dunend2x2_genie: @local::standard_genie
+#dunend2x2_genie.BeamName: "NuMI"
+dunend2x2_genie.EventsPerSpill: 1
+dunend2x2_genie.POTPerSpill: 0
+dunend2x2_genie.GlobalTimeOffset:        0
+dunend2x2_genie.RandomTimeOffset:        0
+dunend2x2_genie.TopVolume:               "world_vol"
+dunend2x2_genie.BeamCenter:       [0, 0, 0]  #center of the beam in cm relative to detector coordinate origin, in meters for GENIE
+dunend2x2_genie.BeamDirection:    [0., 0., 1.]    #all in the z direction
+dunend2x2_genie.BeamRadius:       .01              #in meters for GENIE
+dunend2x2_genie.FluxType:         "mono"
+dunend2x2_genie.DefinedVtxHistRange: true
+dunend2x2_genie.VtxPosHistRange: [-10000,10000,-1000,1000,0,2000]
+
+#neutrino singles for 2x2
+dunend2x2_genie_nu:                         @local::standard_genie
+dunend2x2_genie_nu.BeamName:                "NuMI"
+dunend2x2_genie_nu.FluxSearchPaths:         "/dune/data/users/rdiurba"
+dunend2x2_genie_nu.FluxFiles:               ["g4numiv6_minervame_me000z200i_0_0001.dk2nu"]
+dunend2x2_genie_nu.FluxCopyMethod:          "DIRECT"
+dunend2x2_genie_nu.FluxType:                "dk2nu"
+dunend2x2_genie_nu.MaxFluxFileMB:           500
+dunend2x2_genie_nu.TopVolume:               "world_vol"
+dunend2x2_genie_nu.EventsPerSpill:          1
+dunend2x2_genie_nu.POTPerSpill:             0
+dunend2x2_genie_nu.DefinedVtxHistRange:     true
+dunend2x2_genie_nu.VtxPosHistRange:         [-1000,1000,-1000,1000,0,2000]
+dunend2x2_genie_nu.DetectorLocation:        "MINOS-NearDet"
+dunend2x2_genie_nu.FiducialCut:             "box:-500,-300,0,500,300,200"
+
 #neutrino singles
 dunendlartms_genie_nu:                         @local::standard_genie
 dunendlartms_genie_nu.BeamName:                "lbnf"
@@ -32,7 +65,7 @@ dunendlartms_genie_nu.EventsPerSpill:          1
 dunendlartms_genie_nu.POTPerSpill:             0
 dunendlartms_genie_nu.DefinedVtxHistRange:     true
 dunendlartms_genie_nu.VtxPosHistRange:         [-1000,1000,-1000,1000,0,2000]
-dunendlartms_genie_nu.DetectorLocation:        "DUNEND"
+dunendlartms_genie_nu.DetectorLocation:        "MINOS-NearDet"
 dunendlartms_genie_nu.FiducialCut:             "box:-500,-300,200,500,300,1000"
 
 #anti-neutrino singles
@@ -44,6 +77,11 @@ dunendlartms_genie_anu.FluxFiles:              ["g4lbne_v3r5p4_QGSP_BERT_Optimiz
 dunendlartms_genie_nu_spill:                   @local::dunendlartms_genie_nu
 dunendlartms_genie_nu_spill.EventsPerSpill:    0
 dunendlartms_genie_nu_spill.POTPerSpill:       7.5e13
+
+#neutrino spills for ArgonCube2x2
+dunend2x2_genie_nu_spill:                   @local::dunend2x2_genie_nu
+dunend2x2_genie_nu_spill.EventsPerSpill:    0
+dunend2x2_genie_nu_spill.POTPerSpill:       6e13
 
 #anti-neutrino spills
 dunendlartms_genie_anu_spill:                  @local::dunendlartms_genie_anu
