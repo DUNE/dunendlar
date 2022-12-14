@@ -58,6 +58,17 @@ dunend2x2_geo:
   service_type: "Geometry"
 }
 
+dunend2x2_withoutRock_geo:
+{
+Name: "2x2_withoutRock.gdml"
+GDML: "2x2_withoutRock.gdml"
+ROOT: "2x2_withoutRock.gdml"
+SurfaceY: 0
+DisableWiresInG4: false
+SortingParameters: {}
+service_type: "Geometry"
+}
+
 
 dunendlar_detproperties:         @local::standard_detproperties
 dunendlar_properties:            @local::standard_properties
@@ -81,7 +92,8 @@ dunendmodule0_services.Geometry: @local::dunendmodule0_geo
 dunend2x2_services: @local::dunendlar_services
 dunend2x2_services.Geometry: @local::dunend2x2_geo
 
-
+dunend2x2_withoutRock_services: @local::dunend2x2_services
+dunend2x2_withoutRock_services.Geometry: @local::dunend2x2_withoutRock_geo
 
 
 END_PROLOG

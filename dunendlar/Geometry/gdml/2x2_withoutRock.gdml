@@ -1792,13 +1792,13 @@
 		</element>
 		<material name="sMinervaGreenFiber">
 			<D value="1.043"/>
-			<fraction ref="CARBON_elm" n="0.92258197069168091"/>
-			<fraction ref="HYDROGEN_elm" n="0.077417999505996704"/>
+			<fraction ref="CARBON_elm" n="0.9225819706916809"/>
+			<fraction ref="HYDROGEN_elm" n="0.0774179995059967"/>
 		</material>
 		<material name="sMinervaPlasticScint">
 			<D value="1.043"/>
-			<fraction ref="CARBON_elm" n="0.92258197069168091"/>
-			<fraction ref="HYDROGEN_elm" n="0.077417999505996704"/>
+			<fraction ref="CARBON_elm" n="0.9225819706916809"/>
+			<fraction ref="HYDROGEN_elm" n="0.0774179995059967"/>
 		</material>
 		<element name="OXYGEN_elm" formula="O" Z="8">
 			<atom value="15.9994"/>
@@ -1808,10 +1808,10 @@
 		</element>
 		<material name="sMinervaPSTitaniumDioxide">
 			<D value="1.52105"/>
-			<fraction ref="CARBON_elm" n="0.78419500589370728"/>
-			<fraction ref="HYDROGEN_elm" n="0.065805301070213318"/>
+			<fraction ref="CARBON_elm" n="0.7841950058937073"/>
+			<fraction ref="HYDROGEN_elm" n="0.06580530107021332"/>
 			<fraction ref="OXYGEN_elm" n="0.060087900608778"/>
-			<fraction ref="TITANIUM_elm" n="0.089912101626396179"/>
+			<fraction ref="TITANIUM_elm" n="0.08991210162639618"/>
 		</material>
 		<element name="ALUMINIUM_elm" formula="AL" Z="13">
 			<atom value="26.981538"/>
@@ -1829,29 +1829,29 @@
 			<D value="0.889"/>
 			<fraction ref="ALUMINIUM_elm" n="0.06589999794960022"/>
 			<fraction ref="CARBON_elm" n="0.48539999127388"/>
-			<fraction ref="CHLORINE_elm" n="0.00050000002374872565"/>
-			<fraction ref="HYDROGEN_elm" n="0.071400001645088196"/>
+			<fraction ref="CHLORINE_elm" n="0.0005000000237487257"/>
+			<fraction ref="HYDROGEN_elm" n="0.0714000016450882"/>
 			<fraction ref="NITROGEN_elm" n="0.016599999740719795"/>
-			<fraction ref="OXYGEN_elm" n="0.28810000419616699"/>
-			<fraction ref="SILICON_elm" n="0.072099998593330383"/>
+			<fraction ref="OXYGEN_elm" n="0.288100004196167"/>
+			<fraction ref="SILICON_elm" n="0.07209999859333038"/>
 		</material>
 		<material name="sMinervaLexan">
 			<D value="1.2"/>
-			<fraction ref="CARBON_elm" n="0.75580000877380371"/>
-			<fraction ref="HYDROGEN_elm" n="0.055500000715255737"/>
+			<fraction ref="CARBON_elm" n="0.7558000087738037"/>
+			<fraction ref="HYDROGEN_elm" n="0.05550000071525574"/>
 			<fraction ref="OXYGEN_elm" n="0.18870000541210175"/>
 		</material>
 		<material name="sMinervaClearEpoxy">
 			<D value="1.1"/>
-			<fraction ref="CARBON_elm" n="0.69419997930526733"/>
-			<fraction ref="CHLORINE_elm" n="0.0048000002279877663"/>
+			<fraction ref="CARBON_elm" n="0.6941999793052673"/>
+			<fraction ref="CHLORINE_elm" n="0.004800000227987766"/>
 			<fraction ref="HYDROGEN_elm" n="0.10300000011920929"/>
 			<fraction ref="NITROGEN_elm" n="0.026399999856948853"/>
 			<fraction ref="OXYGEN_elm" n="0.17159999907016754"/>
 		</material>
 		<material name="sAir">
 			<D value="0.001205"/>
-			<fraction ref="NITROGEN_elm" n="0.69999998807907104"/>
+			<fraction ref="NITROGEN_elm" n="0.699999988079071"/>
 			<fraction ref="OXYGEN_elm" n="0.30000001192092896"/>
 		</material>
 		<material name="sMinervaPureLead" Z="82">
@@ -1866,8 +1866,8 @@
 		</element>
 		<material name="sMinervaStainlessSteel">
 			<D value="7.834"/>
-			<fraction ref="IRON_elm" n="0.99000000953674316"/>
-			<fraction ref="MANGANESE_elm" n="0.0099999997764825821"/>
+			<fraction ref="IRON_elm" n="0.9900000095367432"/>
+			<fraction ref="MANGANESE_elm" n="0.009999999776482582"/>
 		</material>
 	</materials>
 	<solids>
@@ -15268,7 +15268,7 @@
 		<volume name="volLightDsPlane">
 			<materialref ref="LAr"/>
 			<solidref ref="LightDsPlane"/>
-			<auxiliary auxtype="SensDet" auxvalue="volLightDsPlane"/>
+			<!--auxiliary auxtype="SensDet" auxvalue="volLightDsPlane"/-->
 			<physvol name="volLightTile_4_PV">
 				<volumeref ref="volLightTile"/>
 				<positionref ref="LightDsPlanevolLightTile0_pos"/>
@@ -15293,7 +15293,7 @@
 		<volume name="volLArLightL">
 			<materialref ref="LAr"/>
 			<solidref ref="LArLightL"/>
-			<auxiliary auxtype="SensDet" auxvalue="volLArLightL"/>
+			<!--auxiliary auxtype="SensDet" auxvalue="volLArLightL"/-->
 			<physvol name="volLightUsPlane_PV">
 				<volumeref ref="volLightUsPlane"/>
 				<positionref ref="LArLightLvolLightUsPlane0_pos"/>
@@ -15313,12 +15313,12 @@
 		<volume name="volLArCathode">
 			<materialref ref="FR4"/>
 			<solidref ref="LArCathode"/>
-			<auxiliary auxtype="SensDet" auxvalue="volLArCathode"/>
+			<!--auxiliary auxtype="SensDet" auxvalue="volLArCathode"/-->
 		</volume>
 		<volume name="volLArLightR">
 			<materialref ref="LAr"/>
 			<solidref ref="LArLightR"/>
-			<auxiliary auxtype="SensDet" auxvalue="volLArLightR"/>
+			<!--auxiliary auxtype="SensDet" auxvalue="volLArLightR"/-->
 			<physvol name="volLightUsPlane_1_PV">
 				<volumeref ref="volLightUsPlane"/>
 				<positionref ref="LArLightRvolLightUsPlane0_pos"/>
@@ -15338,7 +15338,7 @@
 		<volume name="volPixelTileR00">
 			<materialref ref="FR4"/>
 			<solidref ref="PixelTileR"/>
-			<auxiliary auxtype="SensDet" auxvalue="volPixelTileR00"/>
+			<!--auxiliary auxtype="SensDet" auxvalue="volPixelTileR00"/-->
 		</volume>
 		<volume name="volPixelTileR10">
 			<materialref ref="FR4"/>
@@ -19494,7 +19494,7 @@
 			</physvol>
 		</volume>
 		<assembly name="truncTrackerAssembly">
-			<physvol name="DetectorlvTrackerModuleXU_0">
+			<physvol name="DetectorlvTrackerModuleXU_0" copynumber="0">
 				<volumeref ref="DetectorlvTrackerModuleXU"/>
 				<position name="DetectorlvTrackerModuleXU_0intruncTrackerAssemblypos" x="0" y="0" z="-29.612300000000001" unit="cm"/>
 			</physvol>
@@ -20097,9 +20097,8 @@
 			</physvol>
 		</volume>
 		<volume name="world_vol">
-			<materialref ref="Rock"/>
-			<solidref ref="world_shape"/>
-			<auxiliary auxtype="SensDet" auxvalue="world_vol"/>
+			<materialref ref="Air"/>
+			<solidref ref="world_shape"/>	
 			<physvol name="volMinosNDHall_PV">
 				<volumeref ref="volMinosNDHall"/>
 				<positionref ref="volMinosNDHall_pos"/>
@@ -20107,7 +20106,7 @@
 			</physvol>
 		</volume>
 	</structure>
-	<setup name="Default" version="1.0">
+	<setup name="Default" version="0.0">
 		<world ref="world_vol"/>
 	</setup>
 </gdml>

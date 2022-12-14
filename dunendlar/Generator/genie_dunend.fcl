@@ -50,7 +50,7 @@ dunend2x2_genie_nu.POTPerSpill:             0
 dunend2x2_genie_nu.DefinedVtxHistRange:     true
 dunend2x2_genie_nu.VtxPosHistRange:         [-1000,1000,-1000,1000,0,2000]
 dunend2x2_genie_nu.DetectorLocation:        "MINOS-NearDet"
-dunend2x2_genie_nu.FiducialCut:             "box:-500,-300,0,500,300,200"
+dunend2x2_genie_nu.FiducialCut:             "box:-500,-300,0,500,300,100"
 
 #neutrino singles
 dunendlartms_genie_nu:                         @local::standard_genie
@@ -81,7 +81,8 @@ dunendlartms_genie_nu_spill.POTPerSpill:       7.5e13
 #neutrino spills for ArgonCube2x2
 dunend2x2_genie_nu_spill:                   @local::dunend2x2_genie_nu
 dunend2x2_genie_nu_spill.EventsPerSpill:    0
-dunend2x2_genie_nu_spill.POTPerSpill:       6e13
+dunend2x2_genie_nu_spill.POTPerSpill:       6.5e13
+dunend2x2_genie_nu_spill.FiducialCut:             "box:-500,-300,-1000,500,300,1000"
 
 #anti-neutrino spills
 dunendlartms_genie_anu_spill:                  @local::dunendlartms_genie_anu
