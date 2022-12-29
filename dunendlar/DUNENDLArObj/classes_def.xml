@@ -21,6 +21,7 @@
   <version ClassVersion="11" checksum="2256244176"/>
   <version ClassVersion="10" checksum="4205740785"/>
  </class>
+
  <class name="std::vector<raw::Module0Trigger>" />
  <class name="art::Ptr<raw::Module0Trigger>" />
  <class name="art::Wrapper<vector<raw::Module0Trigger> >"/>
