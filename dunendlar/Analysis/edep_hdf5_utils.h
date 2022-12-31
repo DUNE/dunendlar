@@ -1,12 +1,12 @@
-#ifndef HDF5_UTILS_H
-#define HDF5_UTILS_H
+#ifndef EDEP_HDF5_UTILS_H
+#define EDEP_HDF5_UTILS_H
 //#include "hdf5.h"
 #include "hdf5_hl.h"
 //#include "H5Tpublic.h"
 
 
 
-namespace hdf5_utils{
+namespace edep_hdf5_utils{
 
   const size_t NFIELDS_VTX = 4;
   const size_t NFIELDS_TRAJ = 14;

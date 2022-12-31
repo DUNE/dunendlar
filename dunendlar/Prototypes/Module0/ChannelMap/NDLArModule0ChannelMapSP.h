@@ -6,7 +6,7 @@
 //
 // Implementation of hardware-offline channel mapping reading from a file.
 // art-independent class  
-// The SP in the class and file anme means "Service Provider"
+// The SP in the class and file name means "Service Provider"
 // DUNE ND-LAr Module 0
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -24,7 +24,7 @@ namespace dune {
 
 class dune::NDLArModule0ChannelMapSP {
 
-public:
+ public:
 
   typedef struct NDLArModule0ChanInfo {
     unsigned int offlinechan;     // in gdml and channel sorting convention
@@ -43,22 +43,50 @@ public:
   // and the other containing a crate and APA name listing.
 
   void ReadMapFromFile(const std::string &chanmapfile, 
-		       std::vector<double> &anodexoffset,
-		       std::vector<double> &anodeyoffset,
-		       std::vector<double> &anodezoffset);
+                       std::vector<double> &anodexoffset,
+                       std::vector<double> &anodeyoffset,
+                       std::vector<double> &anodezoffset);
 
 
   NDLArModule0ChanInfo_t GetChanInfoFromElectronics(
-   unsigned int io_group,
-   unsigned int io_channel,
-   unsigned int chip,
-   unsigned int chipchannel) const;
+                                                    unsigned int io_group,
+                                                    unsigned int io_channel,
+                                                    unsigned int chip,
+                                                    unsigned int chipchannel) const;
 
   NDLArModule0ChanInfo_t GetChanInfoFromOfflChan(unsigned int offlchan) const;
 
+  // lookup by Y and Z within the readout plane, and use X to determine which readout plane to look up
+
+  NDLArModule0ChanInfo_t GetChanInfoFromXYZ(double x, double y, double z) const;
+
+  // this method returns a vector of channel infos, the first of which correspond to the x, y, z input, and the
+  // remainder are within a radius r (in cm) in the yz plane
+
+  std::vector<NDLArModule0ChanInfo_t> GetChanInfoFromXYZWithNeighbors(double x, double y, double z, double r) const;
+
+ private:
+
+  void InitializeChanLocParams();
+
+  bool fInitialized;
+
   unsigned int fNChans;  // 78400 nominal chans but compute it from input
 
-private:
+  double fXMin;
+  double fXMax;
+  double fYMin;
+  double fYMax;
+  double fZMin;
+  double fZMax;
+  double fPixelPitch;
+  double fYTileSep;
+  double fZTileSep;
+  size_t fNChansPerRow;
+  size_t fNChansPerTRow;
+  size_t fNChansPerTileRow;
+  size_t fNChansPerSide;
+  size_t fTPCCathodeLoc;
 
   std::unordered_map<unsigned int,   // io_group
     std::unordered_map<unsigned int, // tile
@@ -75,10 +103,10 @@ private:
 
   void check_offline_channel(unsigned int offlineChannel) const
   {
-  if (offlineChannel >= fNChans)
-    {      
-      throw std::range_error("NDLArModule0ChannelMapSP offline Channel out of range"); 
-    }
+    if (offlineChannel >= fNChans)
+      {      
+        throw std::range_error("NDLArModule0ChannelMapSP offline Channel out of range"); 
+      }
   };
 
 };
