@@ -81,6 +81,9 @@ private:
   float fMaxSagitta;
   float fMaxSeparation;
   float fMaxLength;
+  bool fSetEdepSimPositionToMM;
+
+  float DistanceConversion(){ return (fSetEdepSimPositionToMM)? 10: 1;};
 
   const art::InputTag fGenieGenModuleLabel;
   const art::InputTag fGeantModuleLabel;
@@ -213,6 +216,7 @@ dunend::EdepDump::EdepDump(fhicl::ParameterSet const& p)
   fMaxSagitta   = p.get<float>("MaxSagitta", 0.1);
   fMaxSeparation   = p.get<float>("MaxSeparation", 0.1);
   fMaxLength   = p.get<float>("MaxLength", 0.3);
+  fSetEdepSimPositionToMM   = p.get<bool>("SetEdepSimPositionToMM", true);
 
 
   //create array type
@@ -674,7 +678,8 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
     // ---- TODO: fill sensible Informational
 
     // TLorentzVector   Position
-    if (tg4vtx.Particles.size() > 0 ) tg4vtx.Position = mctruth->GetParticle(0).Position();
+    //Position Unit: convert to mm from cm
+    if (tg4vtx.Particles.size() > 0 ) tg4vtx.Position = mctruth->GetParticle(0).Position()*DistanceConversion();
 
     // std::string  GeneratorName
     tg4vtx.GeneratorName = edep_utils::generatorTable()[ mctruth->GeneratorInfo().generator ];
@@ -735,7 +740,8 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
 
       //TLorentzVector  Position
       //The position of this trajectory point. More...
-      tg4point.Position = itp->first;
+      //Position Unit: convert to mm from cm
+      tg4point.Position = itp->first*DistanceConversion();
      
       //TVector3  Momentum
       //The momentum of the particle at this trajectory point. More...
@@ -810,7 +816,7 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
           fMaxLength
           );
 
-      combined_sedlists[encode] = ConvertSegmentToSED( combined_segments[encode] );
+      //combined_sedlists[encode] = ConvertSegmentToSED( combined_segments[encode] );
       }
   }
 
@@ -824,9 +830,11 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
       tg4seg.PrimaryId = seg.TrackID();
       tg4seg.EnergyDeposit = seg.TotalEnergyDeposit();
       tg4seg.SecondaryDeposit= seg.SecondaryEnergyDeposit();
-      tg4seg.TrackLength = seg.TrackLength();
-      tg4seg.Start.SetXYZT( seg.StartPos().X(),seg.StartPos().Y(),seg.StartPos().Z(),seg.StartPos().T());
-      tg4seg.Stop.SetXYZT( seg.StopPos().X(),seg.StopPos().Y(),seg.StopPos().Z(),seg.StopPos().T());
+      //Position Unit: convert to mm from cm
+      float conv = DistanceConversion();
+      tg4seg.TrackLength = seg.TrackLength()*conv;
+      tg4seg.Start.SetXYZT( seg.StartPos().X()*conv,seg.StartPos().Y()*conv,seg.StartPos().Z()*conv,seg.StartPos().T());
+      tg4seg.Stop.SetXYZT( seg.StopPos().X()*conv,seg.StopPos().Y()*conv,seg.StopPos().Z()*conv,seg.StopPos().T());
 
       //Fill
       tg4event->SegmentDetectors[label].push_back(tg4seg);
