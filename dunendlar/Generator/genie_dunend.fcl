@@ -50,7 +50,7 @@ dunend2x2_genie_nu.POTPerSpill:             0
 dunend2x2_genie_nu.DefinedVtxHistRange:     true
 dunend2x2_genie_nu.VtxPosHistRange:         [-1000,1000,-1000,1000,0,2000]
 dunend2x2_genie_nu.DetectorLocation:        "ProtoDUNE-ND"
-dunend2x2_genie_nu.FiducialCut:             "box:-67,24,-67,67,110,67"
+dunend2x2_genie_nu.FiducialCut:             "box:-67,-24,-67,67,110,67"
 
 #neutrino singles
 dunendlartms_genie_nu:                         @local::standard_genie

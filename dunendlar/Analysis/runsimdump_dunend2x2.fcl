@@ -1,0 +1,35 @@
+#include "services_dunendlar.fcl"
+#include "simdumpmodule.fcl"
+
+process_name: SimDump
+
+source:
+{
+  module_type: RootInput
+}
+
+outputs:
+{
+}
+
+
+services:
+{
+  TFileService: { fileName: "simdump.root" }
+  FileCatalogMetadataDUNE:      {}
+  FileCatalogMetadata:          @local::art_file_catalog_mc
+  TFileMetadataDUNE:            @local::dune_tfile_metadata
+  @table::dunend2x2_services
+}
+
+
+physics:
+{
+  analyzers:
+  {
+    simdump: @local::simdump_dunend2x2
+  }
+
+  ana:  [ simdump ]
+  end_paths: [ ana ]
+}

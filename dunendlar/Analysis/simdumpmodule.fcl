@@ -10,6 +10,18 @@ simdump_dunendlartms:
                       "largeant:LArG4DetectorServicescinBoxlvTMS"]
 }
 
+
+simdump_dunend2x2:{
+module_type: "SimDump"
+GenieGenModuleLabel: "generator"
+GeantModuleLabel: "largeant"
+SEDModuleLabels: ["largeant:LArG4DetectorServicevolLArActive"]
+
+
+}
+
+
+
 simdump_dunendmodule0:
 {
     module_type:         "SimDump"
