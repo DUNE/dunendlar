@@ -1,4 +1,9 @@
-art_make(BASENAME_ONLY
+include_directories( $ENV{EDEPSIM_INC}/EDepSim )
+
+art_make(
+  LIB_LIBRARIES
+  EDepSim::edepsim_io
+  BASENAME_ONLY
   MODULE_LIBRARIES
   cetlib cetlib_except
   larsim::Simulation
@@ -18,6 +23,7 @@ art_make(BASENAME_ONLY
   art::Framework_Services_Registry
   art_root_io::tfile_support
   ROOT::Core
+  EDepSim::edepsim_io
   art_root_io::TFileService_service
   art::Persistency_Common
   canvas::canvas
@@ -27,6 +33,13 @@ art_make(BASENAME_ONLY
   LIBHDF5
   LIBHDF5_HL
   )
+
+
 install_headers()
 install_fhicl()
 install_source()
+
+
+
+
+

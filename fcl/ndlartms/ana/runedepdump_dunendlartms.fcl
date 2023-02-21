@@ -1,0 +1,10 @@
+#include "runedepdump.fcl"
+
+services: {
+  TFileService: { fileName: "edepdump.root" }
+  FileCatalogMetadataDUNE:      {}
+  FileCatalogMetadata:          @local::art_file_catalog_mc
+  TFileMetadataDUNE:            @local::dune_tfile_metadata
+  @table::dunendlartms_services
+}
+

@@ -3,7 +3,7 @@
 
 process_name: testmodule0reader
 
-source: @local::ndlarmodule0rawinput}
+source: @local::ndlarmodule0rawinput
 
 outputs: {
   rootout: {
