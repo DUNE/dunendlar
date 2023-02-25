@@ -52,6 +52,9 @@ dunend2x2_genie_nu.VtxPosHistRange:         [-1000,1000,-1000,1000,0,2000]
 dunend2x2_genie_nu.DetectorLocation:        "ProtoDUNE-ND"
 dunend2x2_genie_nu.FiducialCut:             "box:-67,-24,-67,67,110,67"
 
+dunend2x2_genie_anu: @local::dunend2x2_genie_nu
+dunend2x2_genie_anu.FluxFiles: ["g4numiv6_minervame_me000z-200i_1_0001_RHC.dk2nu"]
+
 #neutrino singles
 dunendlartms_genie_nu:                         @local::standard_genie
 dunendlartms_genie_nu.BeamName:                "lbnf"
@@ -83,6 +86,14 @@ dunend2x2_genie_nu_spill:                   @local::dunend2x2_genie_nu
 dunend2x2_genie_nu_spill.EventsPerSpill:    0
 dunend2x2_genie_nu_spill.POTPerSpill:       6.5e13
 dunend2x2_genie_nu_spill.FiducialCut:             "box:-500,-300,-1000,500,300,1000"
+
+dunend2x2_genie_anu_spill: @local::dunend2x2_genie_anu
+dunend2x2_genie_anu_spill.EventsPerSpill: 0
+dunend2x2_genie_anu_spill.POTPerSpill: 6.5e13
+dunend2x2_genie_anu_spill.FiducialCut:             "box:-500,-300,-1000,500,300,1000"
+
+
+
 
 #anti-neutrino spills
 dunendlartms_genie_anu_spill:                  @local::dunendlartms_genie_anu

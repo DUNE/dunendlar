@@ -1,0 +1,6 @@
+#include "prodgenie_nu_dunend2x2.fcl"
+
+process_name: GenieGen
+
+physics.producers.generator: @local::dunend2x2_genie_anu_spill
+outputs.out1.fileName:       "genie_anu_spill_dunend2x2_gen.root"
