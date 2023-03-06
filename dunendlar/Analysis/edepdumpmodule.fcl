@@ -13,6 +13,17 @@ edepdump_dunendlartms:
     MaxSeparation:        0.1
     MaxLength:            0.3
 }
+edepdump_dunend2x2:
+{
+    module_type:         "EdepDump"
+    GenieGenModuleLabel: "generator"
+    GeantModuleLabel:    "largeant"
+    SEDModuleLabels: ["largeant:LArG4DetectorServicevolLArActive"]
+    LogLevel:             1
+    MaxSagitta:           0.1
+    MaxSeparation:        0.1
+    MaxLength:            0.3
+}
 
 edepdump_dunendmodule0:
 {
