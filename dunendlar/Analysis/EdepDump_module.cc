@@ -75,6 +75,7 @@ public:
 private:
 
 
+  int fDeltaTrackID;
 
   int fLogLevel;
 
@@ -82,6 +83,7 @@ private:
   float fMaxSeparation;
   float fMaxLength;
   bool fSetEdepSimPositionToMM;
+  bool fMergeSteps;
 
   float DistanceConversion(){ return (fSetEdepSimPositionToMM)? 10: 1;};
 
@@ -90,6 +92,8 @@ private:
   vector<art::InputTag> fSEDModuleLabels;
 
 
+  string fFileName;
+  TFile *outFile;
   TTree *eventTree;
   TG4Event *tg4event;
   void FillTG4Event( art::Event const &e );
@@ -213,10 +217,16 @@ dunend::EdepDump::EdepDump(fhicl::ParameterSet const& p)
 
   fLogLevel              = p.get<int>("LogLevel", 3 );
 
+  fMergeSteps           = p.get<bool>("DoMergeStep", true);
+  // LArSoft TrackID starts at 1, this in incompatible with Edepsim, decrease it by one by default.
+  fDeltaTrackID          = p.get<int>("DeltaTrackID",-1);
+
   fMaxSagitta   = p.get<float>("MaxSagitta", 0.1);
   fMaxSeparation   = p.get<float>("MaxSeparation", 0.1);
   fMaxLength   = p.get<float>("MaxLength", 0.3);
   fSetEdepSimPositionToMM   = p.get<bool>("SetEdepSimPositionToMM", true);
+
+  fFileName = p.get<string>("FileName", "edep_dump.root");
 
 
   //create array type
@@ -339,22 +349,35 @@ void dunend::EdepDump::analyze(art::Event const& e)
 void dunend::EdepDump::beginJob()
 {
   art::ServiceHandle<geo::Geometry> geom;
+
+  outFile = new TFile( fFileName.c_str(), "recreate");
+
+  // TGeoManager::UnlockGeometry();
+  // TGeoManager::LockDefaultUnits(false);
+
   TGeoManager *geoman = geom->ROOTGeoManager();
-  TFile *f = TFile::Open("geometry.root", "recreate");
+
+  // TGeoManager::SetDefaultUnits(TGeoManager::kG4Units);
   geoman->Write("EDepSimGeometry");
-  f->Close();
+  // delete geoman;
+
+  // TGeoManager::UnlockGeometry();
+  // TGeoManager::LockDefaultUnits(false);
+  // TGeoManager::SetDefaultUnits(TGeoManager::kRootUnits);
+  // TGeoManager::LockDefaultUnits(true);
+  // TGeoManager::LockGeometry();
+
+
+  eventTree = new TTree("EDepSimEvents", "Energy Deposition for Simulated Events");
+  //eventTree = tfs->make<TTree>("EDepSimEvents", "Energy Deposition for Simulated Events");
   tg4event = new TG4Event();
-
-
-  art::ServiceHandle<art::TFileService> tfs;
-
-  eventTree = tfs->make<TTree>("EDepSimEvents", "Energy Deposition for Simulated Events");
   eventTree->Branch("Event",tg4event);
 
 
 
 
-  fTree = tfs->make<TTree>("ndsim","ND simulation tree");
+  //fTree = tfs->make<TTree>("ndsim","ND simulation tree");
+  fTree = new TTree("ndsim","ND simulation tree");
   fTree->Branch("run",&run,"run/I");
   fTree->Branch("subrun",&subrun,"subrun/I");
   fTree->Branch("event",&event,"event/I");
@@ -423,6 +446,9 @@ void dunend::EdepDump::endJob()
   /* close the file */
   H5Fclose( hdffile );
 
+  //eventTree->Write();
+  outFile->Write();
+  outFile->Close();
   delete tg4event;
 }
 
@@ -526,11 +552,11 @@ std::vector<edep_utils::NDHitSegment> dunend::EdepDump::CombineSEDToSegment(
     //  int fMaxAttempt = 20;
 
     //std::vector<sim::SimEnergyDeposit> ret;
-    std::sort( sedlist.begin(), sedlist.end(), []( auto &a, auto& b )
-        {
-        return a->EndX() < b->EndX();
-        }
-        );
+    //std::sort( sedlist.begin(), sedlist.end(), []( auto &a, auto& b )
+    //    {
+    //    return a->EndX() < b->EndX();
+    //    }
+    //    );
     if(fLogLevel >= 6) std::cout<<maxSagitta<<", "<<maxLength<<", "<<maxSeparation<<std::endl;
 
 
@@ -542,7 +568,7 @@ std::vector<edep_utils::NDHitSegment> dunend::EdepDump::CombineSEDToSegment(
       auto sed = sedlist.front();
 
       edep_utils::NDHitSegment* currentHit = NULL;
-      if( 0<=fLastHit && fLastHit< (int) hits.size() )
+      if( 0<=fLastHit && fLastHit< (int) hits.size() && fMergeSteps )
       {
         edep_utils::NDHitSegment *tmpHit = &hits[fLastHit];
         if (tmpHit->SameHit(sed))
@@ -558,7 +584,8 @@ std::vector<edep_utils::NDHitSegment> dunend::EdepDump::CombineSEDToSegment(
       {
         currentHit = new edep_utils::NDHitSegment(maxSagitta, 
             maxSeparation,
-            maxLength);
+            maxLength,
+            fDeltaTrackID);
 
         fLastHit = hits.size();
         hits.push_back(*currentHit);
@@ -653,6 +680,7 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
     tg4event = new TG4Event();
     eventTree->Branch("Event",tg4event);
   }
+
 
   if (fLogLevel >= 5) std::cout<<"FillTG4Event -- setting"<<std::endl;
   tg4event->RunId = (int) e.run();
@@ -773,10 +801,12 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
     }
    
     // Int_t   TrackId
-    traj.TrackId = mcp->TrackId();
+    // LArSoft TrackID starts at 1, this in incompatible with Edepsim
+    traj.TrackId = mcp->TrackId()+fDeltaTrackID;
+
    
     // Int_t   ParentId
-    traj.ParentId = mcp->Mother();
+    traj.ParentId = mcp->Mother()+fDeltaTrackID;
    
     // std::string   Name
     // The name of the particle
@@ -800,11 +830,22 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
   if (combined_segments.size() == 0 )
   {
     for (auto & label : fSEDModuleLabels){
-      //cout<<label.instance().substr(20)<<endl;
+      cout<<label.instance().substr(20)<<endl;
       std::vector<art::Ptr<sim::SimEnergyDeposit>> sedlist;
       auto sedListHandle = e.getHandle< std::vector<sim::SimEnergyDeposit> >(label);
       if (sedListHandle){
         art::fill_ptr_vector(sedlist, sedListHandle);
+      }
+
+      if (fLogLevel >= 5)
+      {
+        // DEBUG
+        std::cout<<" == n segments: "<<sedlist.size()<<std::endl;
+        for( auto sed: sedlist )
+        {
+          std::cout<<sed->TrackID()<<"\t";
+        }
+        std::cout<<std::endl;
       }
 
       //string det = label.instance().substr(20);
@@ -828,7 +869,9 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
 
       tg4seg.Contrib = seg.Contributors();
       tg4seg.PrimaryId = seg.TrackID();
-      tg4seg.EnergyDeposit = seg.TotalEnergyDeposit();
+
+
+      tg4seg.EnergyDeposit = seg.TotalEnergyDeposit() - seg.SecondaryEnergyDeposit();
       tg4seg.SecondaryDeposit= seg.SecondaryEnergyDeposit();
       //Position Unit: convert to mm from cm
       float conv = DistanceConversion();
@@ -840,6 +883,46 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
       tg4event->SegmentDetectors[label].push_back(tg4seg);
     }
   }
+
+
+  if (fLogLevel >= 5)
+  {
+    // DEBUG: Display track IDs
+    std::set<int> trackid_traj, trackid_seg, trackid_seg_primary;
+    
+    std::cout<<" === trajectory full tid: "<<tg4event->Trajectories.size()<<std::endl;
+    for (auto &traj : tg4event->Trajectories) 
+    {
+      trackid_traj.insert( traj.GetTrackId() );
+      //std::cout<<traj.GetTrackId()<<"\t";
+    }
+
+    for (auto &[ det, segments ]: tg4event->SegmentDetectors )
+    {
+      std::cout<<" == segdet: "<<det<<" == with "<<segments.size()<<" detsegs: "<<std::endl;
+      for (auto &seg : segments) 
+      {
+        for( auto &c: seg.Contrib ) trackid_seg.insert(c);
+        trackid_seg_primary.insert(seg.PrimaryId);
+        std::cout<<seg.PrimaryId<<"\t";
+      }
+      std::cout<<std::endl;
+    }
+
+    // DEBUG: Print Tracks
+    std::cout<<" === trajectory tid: "<<std::endl;
+    for( auto c: trackid_traj ) std::cout<<c<<"\t";
+    std::cout<<std::endl;
+
+    std::cout<<" === seg tid: "<<std::endl;
+    for( auto c: trackid_seg ) std::cout<<c<<"\t";
+    std::cout<<std::endl;
+
+    std::cout<<" === seg tid primary: "<<std::endl;
+    for( auto c: trackid_seg_primary ) std::cout<<c<<"\t";
+    std::cout<<std::endl;
+  }
+
   eventTree->Fill();
 }
 

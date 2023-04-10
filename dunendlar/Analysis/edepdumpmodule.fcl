@@ -9,20 +9,35 @@ edepdump_dunendlartms:
                       "largeant:LArG4DetectorServicevolTPCActive",
                       "largeant:LArG4DetectorServicescinBoxlvTMS"]
     LogLevel:             1
-    MaxSagitta:           0.1
-    MaxSeparation:        0.1
-    MaxLength:            0.3
+    MaxSagitta:           0.025 #cm
+    MaxSeparation:        0.1 #cm
+    MaxLength:            0.3 #cm
+    SetEdepSimPositionToMM: true
+
+    BufferSize:         1000
+    ChunkSize:          100
+    
+    FileName:  "edep_dump_tms.root"
+
 }
 
 edepdump_dunendmodule0:
 {
     module_type:         "EdepDump"
     GenieGenModuleLabel: "dummy"
+    GeantModuleLabel:    "largeant"
     SEDModuleLabels: ["largeant:LArG4DetectorServicevolTPCActive"]
     LogLevel:             1
-    MaxSagitta:           0.1
-    MaxSeparation:        0.1
-    MaxLength:            0.3
+    MaxSagitta:           0.025 #cm
+    MaxSeparation:        0.1 #cm
+    MaxLength:            0.3 #cm
+    SetEdepSimPositionToMM: true
+
+    BufferSize:         1000
+    ChunkSize:          100
+
+    FileName:  "edep_dump_module0.root"
+
 }
 
 END_PROLOG
