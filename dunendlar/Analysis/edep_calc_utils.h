@@ -71,11 +71,13 @@ namespace edep_utils{
     public:
       NDHitSegment( double maxSagitta=0.1 /*cm*/, 
           double maxSeparation = 0.1 /*cm*/,
-          double maxLength =0.5 /*cm*/
+          double maxLength =0.5 /*cm*/,
+          int deltaTrackID = -1
           ) : 
         fMaxSagitta(maxSagitta), 
         fMaxSeparation(maxSeparation),
         fMaxLength(maxLength),
+        fDeltaTID(deltaTrackID),
         fSegmentInitialized(false)
       {};
 
@@ -116,7 +118,11 @@ namespace edep_utils{
 
       void PrintHit();
 
+      void SetDeltaTrackID(int delta = 0){ fDeltaTID =  delta; }
+      int GetDeltaTrackID(){ return fDeltaTID; }
+
     private:
+      
       /// The sagitta tolerance for the segment.
       double fMaxSagitta;
 
@@ -125,6 +131,10 @@ namespace edep_utils{
 
       /// The maximum length between the start and stop points of the segment.
       double fMaxLength;
+
+      /// deltaTrackID --- displace value of track id by delta amount
+      int fDeltaTID;
+
 
       /// The TrackID for each trajectory that contributed to this hit.  This
       /// could contain the TrackID of the primary particle, but not
@@ -255,23 +265,23 @@ void edep_utils::NDHitSegment::AddStep(art::Ptr<sim::SimEnergyDeposit> &sed){
   }
 
   /// First make sure the step has been initialized.
+  int trackId = sed->TrackID()+GetDeltaTrackID();
   if (!fSegmentInitialized) {
     // std::cout<<"fSegmentInitialized is false, set to true"<<std::endl;
     fSegmentInitialized = true;
-    fPrimaryId = sed->TrackID();
+    fPrimaryId = trackId;
     fStart.SetXYZT(sed->StartX(), sed->StartY(), sed->StartZ(), sed->StartT());
     fPath.push_back(geo::Point_t(fStart.x(),fStart.y(),fStart.z()));
     fStop.SetXYZT(sed->EndX(), sed->EndY(), sed->EndZ(), sed->EndT());
     fPath.push_back(geo::Point_t(fStop.x(),fStop.y(),fStop.z()));
 
     fSedlist.push_back(sed);
-    fContributors.push_back(sed->TrackID());
+    fContributors.push_back(trackId);
     fContributorPDGs.push_back(sed->PdgCode());
   }
   else {
     // Record the tracks that contribute to this hit.
     // std::cout<<"fSegmentInitialized is true, continue"<<std::endl;
-    int trackId = sed->TrackID();
     if (trackId != fContributors.front()) fContributors.push_back(trackId);
     int pdg = sed->PdgCode();
     if (pdg != fContributorPDGs.front()) fContributorPDGs.push_back(pdg);
@@ -309,7 +319,7 @@ void edep_utils::NDHitSegment::AddStep(art::Ptr<sim::SimEnergyDeposit> &sed){
 }
 
 bool edep_utils::NDHitSegment::SameHit(art::Ptr<sim::SimEnergyDeposit> &sed){
-  int trackid = sed->TrackID();
+  int trackid = sed->TrackID() + GetDeltaTrackID();
   double endToEnd = (sed->Start() - fPath.front()).R();
   if ( endToEnd > fMaxLength ) 
   {
