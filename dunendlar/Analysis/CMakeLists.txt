@@ -1,5 +1,14 @@
 include_directories( $ENV{EDEPSIM_INC}/EDepSim )
 
+# print out all cmake variables
+#message("======================================")
+#get_cmake_property(_variableNames VARIABLES)
+#list (SORT _variableNames)
+#foreach (_variableName ${_variableNames})
+#    message(STATUS "${_variableName}=${${_variableName}}")
+#endforeach() 
+#message("======================================")
+
 art_make(
   LIB_LIBRARIES
   EDepSim::edepsim_io
@@ -30,8 +39,8 @@ art_make(
   art::Persistency_Provenance
   art::Utilities
   messagefacility::MF_MessageLogger
-  LIBHDF5
-  LIBHDF5_HL
+  HDF5::HDF5
+  HDF5_HL_SHARED_LIBRARY
   )
 
 

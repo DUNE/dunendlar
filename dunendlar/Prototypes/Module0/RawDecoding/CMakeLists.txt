@@ -10,7 +10,7 @@ simple_plugin(NDLArModule0RawInput "source"
 	 art_root_io::TFileService_service
 	 dunecore::HDF5Utils
 	 dunendlar::Prototypes_Module0_ChannelMap_NDLArModule0ChannelMapService_service
-         LIBHDF5 
+         HDF5::HDF5
          pthread
          z
          art::Framework_Services_Registry
