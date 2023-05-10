@@ -83,9 +83,11 @@ private:
   float fMaxSeparation;
   float fMaxLength;
   bool fSetEdepSimPositionToMM;
+  bool fSetEdepSimEnergyToGeV;
   bool fMergeSteps;
 
   float DistanceConversion(){ return (fSetEdepSimPositionToMM)? 10: 1;};
+  float EnergyConversion(){ return (fSetEdepSimEnergyToGeV)? 0.001: 1;};
 
   const art::InputTag fGenieGenModuleLabel;
   const art::InputTag fGeantModuleLabel;
@@ -104,11 +106,27 @@ private:
     std::vector<art::Ptr<sim::SimEnergyDeposit>> sedlist,
     float maxSagitta, float maxSeparation, float maxLength );
 
+  //a new implementation
+  std::vector<edep_utils::NDHitSegment> CombineSEDToSegment2(
+    std::vector<art::Ptr<sim::SimEnergyDeposit>> &sedlist,
+    float maxSagitta, float maxSeparation, float maxLength );
+
   std::vector<sim::SimEnergyDeposit> ConvertSegmentToSED( 
       std::vector<edep_utils::NDHitSegment> &segments
       );
+
+  std::vector<edep_utils::NDHitSegment> ConvertSEDToNDHitSegment( 
+      std::vector<art::Ptr<sim::SimEnergyDeposit>> &sedlist
+      );
+
+
   std::map<std::string, std::vector<sim::SimEnergyDeposit> > combined_sedlists;
   std::map<std::string, std::vector<edep_utils::NDHitSegment> > combined_segments;
+
+  void FillTree(art::Event const&e);
+  void FillSingleMCP(art::Ptr<simb::MCParticle> &mcp);
+  void FillSingleSED(art::Ptr<sim::SimEnergyDeposit> &sed, std::string det);
+  void FillSingleNDHitSegment(edep_utils::NDHitSegment &seg, std::string det);
 
   TTree *fTree;
   // Run information
@@ -163,11 +181,27 @@ private:
   vector<float>  sed_endy;      //Edep end y (cm)
   vector<float>  sed_endz;      //Edep end z (cm)
   vector<float>  sed_energy;    //energy deposition (MeV)
-  vector<int>    sed_id;        //MCParticle index
+  vector<float>  sed_sec_energy;//secondary energy deposition (MeV)
+  vector<int>    sed_id;        //TrackID index
   vector<int>    sed_pdg;       //PDG code
   vector<string> sed_det;       //Detector name
+  vector<int> sed_nelectrons;       //n electrons
+  vector<int> sed_nphotons;       //n photons
 
-
+  // DetectorSegment information 
+  vector<float>  seg_startx;    //Edep start x (cm)
+  vector<float>  seg_starty;    //Edep start y (cm)
+  vector<float>  seg_startz;    //Edep start z (cm)
+  vector<float>  seg_endx;      //Edep end x (cm)
+  vector<float>  seg_endy;      //Edep end y (cm)
+  vector<float>  seg_endz;      //Edep end z (cm)
+  vector<float>  seg_energy;    //energy deposition (MeV)
+  vector<float>  seg_sec_energy;    //energy deposition (MeV)
+  vector<int>    seg_id;        //TrackID index
+  vector<int>    seg_pdg;       //PDG code
+  vector<string> seg_det;       //Detector name
+  vector<int> seg_nelectrons;       //n electrons
+  vector<int> seg_nphotons;       //n photons
 
   void Reset();
 
@@ -225,6 +259,7 @@ dunend::EdepDump::EdepDump(fhicl::ParameterSet const& p)
   fMaxSeparation   = p.get<float>("MaxSeparation", 0.1);
   fMaxLength   = p.get<float>("MaxLength", 0.3);
   fSetEdepSimPositionToMM   = p.get<bool>("SetEdepSimPositionToMM", true);
+  fSetEdepSimEnergyToGeV   = p.get<bool>("SetEdepEnergyToGeV", true);
 
   fFileName = p.get<string>("FileName", "edep_dump.root");
 
@@ -236,105 +271,11 @@ dunend::EdepDump::EdepDump(fhicl::ParameterSet const& p)
 }
 
 
-/* void dunend::EdepDump::analyze(art::Event const& e)
-{
-  Reset();
-
-  run = e.run();
-  subrun = e.subRun();
-  event = e.id().event();
-
-  // * MC truth information
-  std::vector<art::Ptr<simb::MCTruth> > mclist;
-  auto mctruthListHandle = e.getHandle< std::vector<simb::MCTruth> >(fGenieGenModuleLabel);
-  if (mctruthListHandle)
-    art::fill_ptr_vector(mclist, mctruthListHandle);
-
-  for (auto & mctruth: mclist){
-    if (mctruth->Origin() == simb::kBeamNeutrino){
-      nuPDG.push_back(mctruth->GetNeutrino().Nu().PdgCode());
-      ccnc.push_back(mctruth->GetNeutrino().CCNC());
-      mode.push_back(mctruth->GetNeutrino().Mode());
-      Q2.push_back(mctruth->GetNeutrino().QSqr());
-      W.push_back(mctruth->GetNeutrino().W());
-      X.push_back(mctruth->GetNeutrino().X());
-      Y.push_back(mctruth->GetNeutrino().Y());
-      hitnuc.push_back(mctruth->GetNeutrino().HitNuc());
-      target.push_back(mctruth->GetNeutrino().Target());
-      enu.push_back(mctruth->GetNeutrino().Nu().E());
-      nuvtxx.push_back(mctruth->GetNeutrino().Nu().Vx());
-      nuvtxy.push_back(mctruth->GetNeutrino().Nu().Vy());
-      nuvtxz.push_back(mctruth->GetNeutrino().Nu().Vz());
-      if (mctruth->GetNeutrino().Nu().P()){
-        nu_dcosx.push_back(mctruth->GetNeutrino().Nu().Px()/mctruth->GetNeutrino().Nu().P());
-        nu_dcosy.push_back(mctruth->GetNeutrino().Nu().Py()/mctruth->GetNeutrino().Nu().P());
-        nu_dcosz.push_back(mctruth->GetNeutrino().Nu().Pz()/mctruth->GetNeutrino().Nu().P());
-      }
-      else{
-        nu_dcosx.push_back(-999);
-        nu_dcosy.push_back(-999);
-        nu_dcosz.push_back(-999);
-      }
-      lep_mom.push_back(mctruth->GetNeutrino().Lepton().P());
-      if (mctruth->GetNeutrino().Lepton().P()){
-        lep_dcosx.push_back(mctruth->GetNeutrino().Lepton().Px()/mctruth->GetNeutrino().Lepton().P());
-        lep_dcosy.push_back(mctruth->GetNeutrino().Lepton().Py()/mctruth->GetNeutrino().Lepton().P());
-        lep_dcosz.push_back(mctruth->GetNeutrino().Lepton().Pz()/mctruth->GetNeutrino().Lepton().P());
-      }
-      else{
-        lep_dcosx.push_back(-999);
-        lep_dcosy.push_back(-999);
-        lep_dcosz.push_back(-999);
-      }
-      if (mctruth->NParticles()){
-        simb::MCParticle particle = mctruth->GetParticle(0);
-        t0.push_back(particle.T());
-      }
-      else{
-        t0.push_back(-999);
-      }
-    }
-  }
-
-  // Get Geant4 information
-
-  std::vector<art::Ptr<simb::MCParticle>> mcplist;
-  auto mcpListHandle = e.getHandle< std::vector<simb::MCParticle> >(fGeantModuleLabel);
-  if (mcpListHandle){
-    art::fill_ptr_vector(mcplist, mcpListHandle);
-  }
-  art::FindManyP<simb::MCTruth,sim::GeneratedParticleInfo> fmth(mcpListHandle, e, fGeantModuleLabel);
-
-  for (auto & mcp : mcplist){
-    mcp_id.push_back(mcp->TrackId());
-    mcp_mother.push_back(mcp->Mother());
-    mcp_pdg.push_back(mcp->PdgCode());
-    mcp_energy.push_back(mcp->E());
-    mcp_px.push_back(mcp->Px());
-    mcp_py.push_back(mcp->Py());
-    mcp_pz.push_back(mcp->Pz());
-    mcp_startx.push_back(mcp->Vx());
-    mcp_starty.push_back(mcp->Vy());
-    mcp_startz.push_back(mcp->Vz());
-    mcp_endx.push_back(mcp->EndPosition()[0]);
-    mcp_endy.push_back(mcp->EndPosition()[1]);
-    mcp_endz.push_back(mcp->EndPosition()[2]);
-    if (fmth.isValid()){
-      auto vmcth = fmth.at(mcp.key());
-      //cout<<vmcth.size()<<endl;
-      if (!vmcth.empty()) mcp_nuid.push_back(vmcth[0].key());
-    }
-} */
-
-
 void dunend::EdepDump::analyze(art::Event const& e)
 {
-  Reset();
-
   run = e.run();
   subrun = e.subRun();
   event = e.id().event();
-  fTree->Fill();
 
 
   std::cout<<"FillHDF5 -- entering"<<std::endl;
@@ -344,6 +285,8 @@ void dunend::EdepDump::analyze(art::Event const& e)
   FillTG4Event( e );
   std::cout<<"FillTG4Event -- done"<<std::endl;
 
+  fTree->Fill();
+  Reset();
 }
 
 void dunend::EdepDump::beginJob()
@@ -426,9 +369,27 @@ void dunend::EdepDump::beginJob()
   fTree->Branch("sed_endy", &sed_endy);
   fTree->Branch("sed_endz", &sed_endz);
   fTree->Branch("sed_energy", &sed_energy);
+  fTree->Branch("sed_sec_energy", &sed_sec_energy);
   fTree->Branch("sed_id", &sed_id);
   fTree->Branch("sed_pdg", &sed_pdg);
   fTree->Branch("sed_det", &sed_det);
+  fTree->Branch("sed_nelectrons", &sed_nelectrons);
+  fTree->Branch("sed_nphotons", &sed_nphotons);
+
+  fTree->Branch("seg_startx", &seg_startx);
+  fTree->Branch("seg_starty", &seg_starty);
+  fTree->Branch("seg_startz", &seg_startz);
+  fTree->Branch("seg_endx", &seg_endx);
+  fTree->Branch("seg_endy", &seg_endy);
+  fTree->Branch("seg_endz", &seg_endz);
+  fTree->Branch("seg_energy", &seg_energy);
+  fTree->Branch("seg_sec_energy", &seg_sec_energy);
+  fTree->Branch("seg_id", &seg_id);
+  fTree->Branch("seg_pdg", &seg_pdg);
+  fTree->Branch("seg_det", &seg_det);
+  fTree->Branch("seg_nelectrons", &seg_nelectrons);
+  fTree->Branch("seg_nphotons", &seg_nphotons);
+
 
   //fTree->Branch("segments", &segments);
 
@@ -508,9 +469,27 @@ void dunend::EdepDump::Reset(){
   sed_endy.clear();
   sed_endz.clear();
   sed_energy.clear();
+  sed_sec_energy.clear();
   sed_id.clear();
   sed_pdg.clear();
   sed_det.clear();
+  sed_nelectrons.clear();
+  sed_nphotons.clear();
+
+  seg_startx.clear();
+  seg_starty.clear();
+  seg_startz.clear();
+  seg_endx.clear();
+  seg_endy.clear();
+  seg_endz.clear();
+  seg_energy.clear();
+  seg_sec_energy.clear();
+  seg_id.clear();
+  seg_pdg.clear();
+  seg_det.clear();
+  seg_nelectrons.clear();
+  seg_nphotons.clear();
+
 }
 
 void dunend::EdepDump::FlushHDF5Buffer()
@@ -594,6 +573,92 @@ std::vector<edep_utils::NDHitSegment> dunend::EdepDump::CombineSEDToSegment(
 
       hits.back().AddStep( sed );
       sedlist.erase( sedlist.begin() );
+     
+    }
+
+    if(fLogLevel >= 6) 
+    {
+      std::cout<<"Number of hits: "<<hits.size()<<std::endl;
+      std::cout<<"\tView hits: "<<std::endl;
+
+      int ihit = 0;
+      for( auto hit : hits )
+      {
+        std::cout<<"\t===\t"<<++ihit<<"\t===\t"<<std::endl;    
+        hit.PrintHit();
+      }
+    }
+
+    return hits;
+}
+
+std::vector<edep_utils::NDHitSegment> dunend::EdepDump::CombineSEDToSegment2(
+    std::vector<art::Ptr<sim::SimEnergyDeposit>> &sedlist,
+    float maxSagitta, float maxSeparation, float maxLength )
+  {
+    /// will search addtional fMaxAttempt before force creatingtesting  new hit
+    //  int fMaxAttempt = 20;
+
+    //std::vector<sim::SimEnergyDeposit> ret;
+    auto sedlist_cp = sedlist;
+    std::sort( sedlist_cp.begin(), sedlist_cp.end(), []( auto &a, auto& b )
+        {
+          if (a->TrackID() < b->TrackID()) return true;
+          if (a->TrackID() > b->TrackID()) return false;
+
+          if (a->PdgCode() < b->PdgCode()) return true;
+          if (a->PdgCode() > b->PdgCode()) return false;
+
+          if ( a->StartT() < b->StartT() ) return true;
+          if ( a->StartT() > b->StartT() ) return false;
+          return a->StartZ() < b->StartZ();
+        }
+      );
+    if(fLogLevel >= 6) std::cout<<maxSagitta<<", "<<maxLength<<", "<<maxSeparation<<std::endl;
+
+
+    std::vector<edep_utils::NDHitSegment> hits;
+    int fLastHit = -1;
+
+    if (fMergeSteps)
+    {
+      while( sedlist_cp.size() > 0 )
+      {
+        auto sed = sedlist_cp.front();
+
+        edep_utils::NDHitSegment* currentHit = NULL;
+        if( 0<=fLastHit && fLastHit< (int) hits.size())
+        {
+          edep_utils::NDHitSegment *tmpHit = &hits[fLastHit];
+          if (tmpHit->SameHit(sed))
+          {
+            if(fLogLevel >= 6) std::cout<<"SameHit"<<std::endl;
+            currentHit = tmpHit;
+          }
+        }
+
+
+        // If a hit wasn't found, create one
+        if (!currentHit)
+        {
+          currentHit = new edep_utils::NDHitSegment(maxSagitta, 
+              maxSeparation,
+              maxLength,
+              fDeltaTrackID);
+
+          fLastHit = hits.size();
+          hits.push_back(*currentHit);
+          if(fLogLevel >= 6) std::cout<<"NewHit"<<std::endl;
+        }
+
+        hits.back().AddStep( sed );
+        sedlist_cp.erase( sedlist_cp.begin() );
+      }
+    }
+    else
+    {
+      hits = ConvertSEDToNDHitSegment( sedlist_cp );
+      // ConvertSegmentToSED(hits);
     }
 
     if(fLogLevel >= 6) 
@@ -661,6 +726,23 @@ std::vector<sim::SimEnergyDeposit> dunend::EdepDump::ConvertSegmentToSED(
   return ret;
 }
 
+
+
+std::vector<edep_utils::NDHitSegment> dunend::EdepDump::ConvertSEDToNDHitSegment( 
+      std::vector<art::Ptr<sim::SimEnergyDeposit>> &sedlist
+      )
+{
+  std::vector<edep_utils::NDHitSegment> ret;
+   for( auto &sed: sedlist )
+   {
+     //edep_utils::NDHitSegment *hit = new edep_utils::NDHitSegment(sed,0,0,0.5,-1);
+      //ret.push_back(*std::move(hit));
+      ret.emplace_back(sed,0,0,0.5,-1);
+     // ret.back().AddStep( sed );
+   }
+  return ret;
+}
+
 TG4PrimaryParticle dunend::EdepDump::ConvertParticle( const simb::MCParticle &particle )
 {
   TG4PrimaryParticle part;
@@ -673,6 +755,9 @@ TG4PrimaryParticle dunend::EdepDump::ConvertParticle( const simb::MCParticle &pa
 
 void dunend::EdepDump::FillTG4Event(art::Event const &e)
 {  
+  bool eConv = EnergyConversion();
+  bool distConv = DistanceConversion();
+
   if (fLogLevel >= 5) std::cout<<"FillTG4Event -- begin"<<std::endl;
   if (! tg4event )
   {
@@ -707,7 +792,7 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
 
     // TLorentzVector   Position
     //Position Unit: convert to mm from cm
-    if (tg4vtx.Particles.size() > 0 ) tg4vtx.Position = mctruth->GetParticle(0).Position()*DistanceConversion();
+    if (tg4vtx.Particles.size() > 0 ) tg4vtx.Position = mctruth->GetParticle(0).Position()*distConv;
 
     // std::string  GeneratorName
     tg4vtx.GeneratorName = edep_utils::generatorTable()[ mctruth->GeneratorInfo().generator ];
@@ -752,6 +837,9 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
 
     if (fLogLevel >= 5) std::cout<<"FillTG4Event -- Fill MCP "<<it - mcplist.begin()<<std::endl;
     auto mcp = *it;
+    // Fill MCP info to fTree for analysis
+    FillSingleMCP(mcp);
+
     TG4Trajectory traj;
 
     auto mctraj = mcp->Trajectory();
@@ -769,11 +857,12 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
       //TLorentzVector  Position
       //The position of this trajectory point. More...
       //Position Unit: convert to mm from cm
-      tg4point.Position = itp->first*DistanceConversion();
+      tg4point.Position = itp->first*distConv;
      
       //TVector3  Momentum
       //The momentum of the particle at this trajectory point. More...
-      tg4point.Momentum = itp->second.Vect();
+      // convert from GeV to MeV
+      tg4point.Momentum = itp->second.Vect()*eConv;
      
       // TODO: completed larg4 output does not provide full process information
       // This info might be available during larg4 generation.
@@ -797,6 +886,8 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
       //push tg4point to traj
       if (fLogLevel >= 5) std::cout<<"FillTG4Event -- Fill MCP -- point: push"<<std::endl;
       traj.Points.push_back( tg4point );
+
+
 
     }
    
@@ -837,20 +928,24 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
         art::fill_ptr_vector(sedlist, sedListHandle);
       }
 
-      if (fLogLevel >= 5)
+
+      for( auto &sed: sedlist )
       {
-        // DEBUG
-        std::cout<<" == n segments: "<<sedlist.size()<<std::endl;
-        for( auto sed: sedlist )
+        if (fLogLevel >= 5)
         {
+          // DEBUG
+          std::cout<<" == n segments: "<<sedlist.size()<<std::endl;
           std::cout<<sed->TrackID()<<"\t";
+          std::cout<<std::endl;
         }
-        std::cout<<std::endl;
+
+        FillSingleSED( sed, label.instance().substr(20) );
+
       }
 
       //string det = label.instance().substr(20);
       std::string encode = label.encode();
-      combined_segments[encode]= CombineSEDToSegment(
+      combined_segments[encode]= CombineSEDToSegment2(
           sedlist,
           fMaxSagitta,
           fMaxSeparation,
@@ -865,13 +960,14 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
   {
     for( auto &seg : segments )
     {
+      FillSingleNDHitSegment(seg, label);
       TG4HitSegment tg4seg;
 
       tg4seg.Contrib = seg.Contributors();
       tg4seg.PrimaryId = seg.TrackID();
 
 
-      tg4seg.EnergyDeposit = seg.TotalEnergyDeposit() - seg.SecondaryEnergyDeposit();
+      tg4seg.EnergyDeposit = seg.TotalEnergyDeposit();
       tg4seg.SecondaryDeposit= seg.SecondaryEnergyDeposit();
       //Position Unit: convert to mm from cm
       float conv = DistanceConversion();
@@ -924,6 +1020,61 @@ void dunend::EdepDump::FillTG4Event(art::Event const &e)
   }
 
   eventTree->Fill();
+}
+
+
+
+
+void dunend::EdepDump::FillSingleMCP(art::Ptr<simb::MCParticle> &mcp)
+{
+  this->mcp_id.push_back(mcp->TrackId() );
+  this->mcp_mother.push_back(mcp->Mother() );
+  this->mcp_pdg.push_back(mcp->PdgCode() );
+  this->mcp_energy.push_back(mcp->E() );
+  this->mcp_px.push_back(mcp->Px() );
+  this->mcp_py.push_back(mcp->Py() );
+  this->mcp_pz.push_back(mcp->Pz() );
+  this->mcp_startx.push_back(mcp->Vx() );
+  this->mcp_starty.push_back(mcp->Vy() );
+  this->mcp_startz.push_back(mcp->Vz() );
+  this->mcp_endx.push_back(mcp->EndX() );
+  this->mcp_endy.push_back(mcp->EndY() );
+  this->mcp_endz.push_back(mcp->EndZ() );
+
+}
+
+void dunend::EdepDump::FillSingleSED(art::Ptr<sim::SimEnergyDeposit> &sed, std::string det)
+{
+  this->sed_startx.push_back(sed->StartX() );
+  this->sed_starty.push_back(sed->StartY() );
+  this->sed_startz.push_back(sed->StartZ() );
+  this->sed_endx.push_back(sed->EndX() );
+  this->sed_endy.push_back(sed->EndY() );
+  this->sed_endz.push_back(sed->EndZ() );
+  this->sed_energy.push_back(sed->Energy() );
+  this->sed_nelectrons.push_back(sed->NumElectrons());
+  this->sed_nphotons.push_back(sed->NumPhotons());
+  this->sed_sec_energy.push_back(sed->Energy()*sed->NumPhotons()*(sed->NumPhotons()+sed->NumElectrons()) );
+  this->sed_id.push_back(sed->TrackID() );
+  this->sed_pdg.push_back(sed->PdgCode() );
+  this->sed_det.push_back(det);
+}
+
+void dunend::EdepDump::FillSingleNDHitSegment(edep_utils::NDHitSegment &seg, std::string det)
+{
+  this->seg_startx.push_back(seg.StartPos().X() );
+  this->seg_starty.push_back(seg.StartPos().Y() );
+  this->seg_startz.push_back(seg.StartPos().Z() );
+  this->seg_endx.push_back(seg.StopPos().X() );
+  this->seg_endy.push_back(seg.StopPos().Y() );
+  this->seg_endz.push_back(seg.StopPos().Z() );
+  this->seg_energy.push_back(seg.TotalEnergyDeposit() );
+  this->seg_sec_energy.push_back(seg.SecondaryEnergyDeposit() );
+  this->seg_id.push_back(seg.TrackID() );
+  this->seg_pdg.push_back(seg.PDG() );
+  this->seg_det.push_back(det);
+  this->seg_nelectrons.push_back(seg.NumElectrons());
+  this->seg_nphotons.push_back(seg.NumPhotons());
 }
 
 void dunend::EdepDump::FillHDF5( art::Event const& e)
@@ -1004,7 +1155,7 @@ void dunend::EdepDump::FillHDF5( art::Event const& e)
       art::fill_ptr_vector(sedlist, sedListHandle);
     }
 
-    std::vector<edep_utils::NDHitSegment> combined_hits = CombineSEDToSegment(
+    std::vector<edep_utils::NDHitSegment> combined_hits = CombineSEDToSegment2(
         sedlist,
         fMaxSagitta,
         fMaxSeparation,

@@ -81,6 +81,22 @@ namespace edep_utils{
         fSegmentInitialized(false)
       {};
 
+      NDHitSegment( art::Ptr<sim::SimEnergyDeposit> &sed,
+          double maxSagitta=0.1 /*cm*/, 
+          double maxSeparation = 0.1 /*cm*/,
+          double maxLength =0.5 /*cm*/,
+          int deltaTrackID = -1
+          ) : 
+        fMaxSagitta(maxSagitta), 
+        fMaxSeparation(maxSeparation),
+        fMaxLength(maxLength),
+        fDeltaTID(deltaTrackID),
+        fSegmentInitialized(false)
+      {
+        this->AddStep(sed);
+      };
+
+
       /// Add the effects of a part of a step to this hit.
       void AddStep(art::Ptr<sim::SimEnergyDeposit> &sed);
 
@@ -213,7 +229,8 @@ void edep_utils::NDHitSegment::AddStep(art::Ptr<sim::SimEnergyDeposit> &sed){
 
   double energyDeposit = sed->Energy();
   // As secondary = total * n_photon/(n_q), where n_q = n_photon + n_e
-  double nonIonizingDeposit = energyDeposit*NumPhotons/(NumPhotons+NumElectrons);
+  double nonIonizingDeposit = (NumPhotons>0)?energyDeposit*NumPhotons/(NumPhotons+NumElectrons) : 0;
+  energyDeposit -= nonIonizingDeposit;
 
   if (trackLength < 0.75*stepLength || trackLength < stepLength - 0.1/*cm*/) {
     std::cout<<"Track length shorter than step: " 
@@ -239,6 +256,14 @@ void edep_utils::NDHitSegment::AddStep(art::Ptr<sim::SimEnergyDeposit> &sed){
   if (trackLength <= 0.) {
     std::cout<<"EDepSim::HitSegment:: No track length: " << trackLength << std::endl;
   }
+  if (energyDeposit >= 1 || std::isnan(energyDeposit) ) {
+    std::cout<<"EDepSim::HitSegment:: Too much energy deposited: " << energyDeposit << std::endl;
+    std::cout<<"                    : (ne,nphoton,pdg,trkid):    " << NumElectrons << ","
+                                                                   << NumPhotons <<","
+                                                                   << sed->PdgCode()<<","
+                                                                   << sed->TrackID() <<std::endl;
+  }
+
 
   // Occasionally, a neutral particle will produce a particle below
   // threshold, and it will be recorded as generating the hit.  All of the
@@ -270,6 +295,14 @@ void edep_utils::NDHitSegment::AddStep(art::Ptr<sim::SimEnergyDeposit> &sed){
     // std::cout<<"fSegmentInitialized is false, set to true"<<std::endl;
     fSegmentInitialized = true;
     fPrimaryId = trackId;
+    fEnergyDeposit    = 0;
+    fSecondaryDeposit = 0;
+    fNumElectrons     = 0;
+    fNumPhotons       = 0;
+    fNumSPhotons      = 0;
+    fNumFPhotons      = 0;
+    fNumElectrons     = 0;
+
     fStart.SetXYZT(sed->StartX(), sed->StartY(), sed->StartZ(), sed->StartT());
     fPath.push_back(geo::Point_t(fStart.x(),fStart.y(),fStart.z()));
     fStop.SetXYZT(sed->EndX(), sed->EndY(), sed->EndZ(), sed->EndT());
@@ -300,9 +333,9 @@ void edep_utils::NDHitSegment::AddStep(art::Ptr<sim::SimEnergyDeposit> &sed){
   }
 
   fNumElectrons += NumElectrons;
-  fNumPhotons += NumPhotons;
-  fNumSPhotons += NumSPhotons;
-  fNumFPhotons += NumFPhotons;
+  fNumPhotons   += NumPhotons;
+  fNumSPhotons  += NumSPhotons;
+  fNumFPhotons  += NumFPhotons;
   fNumElectrons += NumElectrons;
 
 
